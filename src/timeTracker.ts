@@ -34,13 +34,22 @@ export class TimeTracker {
     }
     this.currentFile = vscode.window.activeTextEditor?.document.fileName;
 
-    // 必要な場合のみタイマー開始
-    if (
-      this.isTracking &&
-      this.currentFile &&
-      !this.excludeFiles.isExcluded(this.currentFile)
-    ) {
-      this.startTick();
+    // 初回アクティブエディタ（拡張起動時すでに開いているファイル）を初期化
+    // 以前は onDidChangeActiveTextEditor が発火しないため lastStartTime が設定されず時間が加算されなかった。
+    if (this.isTracking && this.currentFile) {
+      if (!this.excludeFiles.isExcluded(this.currentFile)) {
+        const existing = this.fileTimers.get(this.currentFile);
+        if (existing) {
+          // 前セッション保存時は lastStartTime は null のはずなので再開用に現在時刻を設定
+          existing.lastStartTime = Date.now();
+        } else {
+          this.fileTimers.set(this.currentFile, {
+            totalTime: 0,
+            lastStartTime: Date.now(),
+          });
+        }
+        this.startTick();
+      }
     }
   }
 
