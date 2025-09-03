@@ -15,7 +15,7 @@ export class TimeTrackerProvider
 
   constructor(
     private context: vscode.ExtensionContext,
-    private timeTracker: TimeTracker,
+    private timeTracker: TimeTracker
   ) {
     // イベント駆動での更新へ移行（ポーリングなし）
   }
@@ -46,7 +46,7 @@ export class TimeTrackerProvider
         "Total Time",
         totalTimeStr,
         "stopwatch",
-        vscode.TreeItemCollapsibleState.None,
+        vscode.TreeItemCollapsibleState.None
       );
       items.push(totalItem);
 
@@ -55,7 +55,7 @@ export class TimeTrackerProvider
         "Active Files",
         "",
         "folder",
-        vscode.TreeItemCollapsibleState.Expanded,
+        vscode.TreeItemCollapsibleState.Expanded
       );
       items.push(projectItem);
 
@@ -69,13 +69,13 @@ export class TimeTrackerProvider
         const fileName = path.basename(filePath);
         const timeStr = formatTime(timer.totalTime);
         const description = timeStr;
-        const iconName = this.getFileIcon(filePath);
+        const iconName = this.getFileIcon();
 
         const item = new TimeTrackerItem(
           fileName,
           description,
           iconName,
-          vscode.TreeItemCollapsibleState.None,
+          vscode.TreeItemCollapsibleState.None
         );
 
         item.tooltip = `${filePath}\nTotal time: ${timeStr}`;
@@ -93,23 +93,8 @@ export class TimeTrackerProvider
     // 現在はポーリングなしのため特に処理なし
   };
 
-  private getFileIcon = (filePath: string): string => {
-    const ext = path.extname(filePath).toLowerCase();
-
-    const iconMap: Record<string, string> = {
-      ".js": "file-javascript",
-      ".ts": "file-typescript",
-      ".html": "file-html",
-      ".css": "file-css",
-      ".md": "file-markdown",
-      ".json": "file-json",
-      ".txt": "file-text",
-      ".png": "file-image",
-      ".jpg": "file-image",
-      ".jpeg": "file-image",
-    };
-
-    return iconMap[ext] || "file";
+  private getFileIcon = (): string => {
+    return "file-text";
   };
 }
 
@@ -118,7 +103,7 @@ class TimeTrackerItem extends vscode.TreeItem {
     public readonly label: string,
     public readonly description: string,
     iconName: string,
-    public readonly collapsibleState: vscode.TreeItemCollapsibleState,
+    public readonly collapsibleState: vscode.TreeItemCollapsibleState
   ) {
     super(label, collapsibleState);
     this.tooltip = `${this.label}: ${this.description}`;
