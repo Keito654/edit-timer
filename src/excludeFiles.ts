@@ -127,14 +127,14 @@ export class ExcludeFiles {
     if (isExcluded) {
       this.statusBarItem.text = "$(eye-closed) Excluded";
       this.statusBarItem.tooltip =
-        "This file is excluded from time tracking. Click to include it.";
+        "Edit Timer: This file is excluded from time tracking. Click to include it.";
       this.statusBarItem.backgroundColor = new vscode.ThemeColor(
         "statusBarItem.warningBackground"
       );
     } else {
       this.statusBarItem.text = "$(eye) Tracked";
       this.statusBarItem.tooltip =
-        "This file is being tracked. Click to exclude it.";
+        "Edit Timer: This file is being tracked. Click to exclude it.";
       this.statusBarItem.backgroundColor = undefined;
     }
     this.statusBarItem.show();
