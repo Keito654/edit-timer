@@ -22,7 +22,7 @@ export class TimeTracker {
   constructor(
     context: vscode.ExtensionContext,
     statusBarItem: vscode.StatusBarItem,
-    excludeFiles: ExcludeFiles,
+    excludeFiles: ExcludeFiles
   ) {
     this.context = context;
     this.statusBarItem = statusBarItem;
@@ -73,6 +73,22 @@ export class TimeTracker {
     }
     // 状態が変わったので表示を更新（差分適用）
     this.updateStatusBar();
+  };
+
+  /**
+   * 計測を一時停止（すでに停止中なら何もしない）
+   */
+  pause = () => {
+    if (!this.isTracking) return;
+    this.toggle();
+  };
+
+  /**
+   * 計測を再開（すでに再開中なら何もしない）
+   */
+  resume = () => {
+    if (this.isTracking) return;
+    this.toggle();
   };
 
   /**
@@ -192,7 +208,7 @@ export class TimeTracker {
       "Are you sure you want to reset all time data?",
       { modal: true },
       "Yes",
-      "No",
+      "No"
     );
 
     if (result === "Yes") {
@@ -229,7 +245,7 @@ export class TimeTracker {
     // ワークスペース単位で保存
     const saved = this.context.workspaceState.get<Record<string, FileTimer>>(
       "fileTimers",
-      {},
+      {}
     );
     return new Map(Object.entries(saved));
   };

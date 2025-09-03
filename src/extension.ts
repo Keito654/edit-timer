@@ -26,6 +26,12 @@ export function activate(context: vscode.ExtensionContext) {
 
   // タイムトラッカーの初期化
   timeTracker = new TimeTracker(context, statusBarItem, excludeFiles);
+  // 初期コンテキストキー設定
+  vscode.commands.executeCommand(
+    "setContext",
+    "editTimer.isTracking",
+    timeTracker.getIsTracking()
+  );
 
   // コマンドの登録
   const toggleCommand = vscode.commands.registerCommand(
@@ -34,6 +40,11 @@ export function activate(context: vscode.ExtensionContext) {
       timeTracker.toggle();
       // Toggling tracking affects times shown
       timeTrackerProvider.refresh();
+      vscode.commands.executeCommand(
+        "setContext",
+        "editTimer.isTracking",
+        timeTracker.getIsTracking()
+      );
     }
   );
 
@@ -76,6 +87,33 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
+  // Pause / Resume （ビュータイトルボタン用）
+  const pauseCommand = vscode.commands.registerCommand(
+    "editTimer.pause",
+    () => {
+      timeTracker.pause();
+      timeTrackerProvider.refresh();
+      vscode.commands.executeCommand(
+        "setContext",
+        "editTimer.isTracking",
+        timeTracker.getIsTracking()
+      );
+    }
+  );
+
+  const resumeCommand = vscode.commands.registerCommand(
+    "editTimer.resume",
+    () => {
+      timeTracker.resume();
+      timeTrackerProvider.refresh();
+      vscode.commands.executeCommand(
+        "setContext",
+        "editTimer.isTracking",
+        timeTracker.getIsTracking()
+      );
+    }
+  );
+
   // Time Tracker View Provider
   const timeTrackerProvider = new TimeTrackerProvider(context, timeTracker);
   const tree = vscode.window.registerTreeDataProvider(
@@ -102,6 +140,8 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     statusBarItem,
     toggleCommand,
+    pauseCommand,
+    resumeCommand,
     refreshViewCommand,
     openPanelCommand,
     generateTimeCardCommand,

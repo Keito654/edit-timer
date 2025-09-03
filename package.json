@@ -42,6 +42,16 @@
         "icon": "$(watch)"
       },
       {
+        "command": "editTimer.pause",
+        "title": "Pause Edit Timer",
+        "icon": "$(debug-pause)"
+      },
+      {
+        "command": "editTimer.resume",
+        "title": "Resume Edit Timer",
+        "icon": "$(debug-continue)"
+      },
+      {
         "command": "editTimer.refreshView",
         "title": "Refresh Edit Timer",
         "icon": "$(refresh)"
@@ -88,6 +98,16 @@
           "command": "editTimer.refreshView",
           "when": "view == timeTrackerView",
           "group": "navigation"
+        },
+        {
+          "command": "editTimer.pause",
+          "when": "view == timeTrackerView && editTimer.isTracking",
+          "group": "navigation@1"
+        },
+        {
+          "command": "editTimer.resume",
+          "when": "view == timeTrackerView && !editTimer.isTracking",
+          "group": "navigation@1"
         },
         {
           "command": "editTimer.generateTimeCard",
