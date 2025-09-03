@@ -12,7 +12,7 @@ interface FileData {
 export class TimeCardGenerator {
   static generateTimeCard = (
     _context: vscode.ExtensionContext,
-    timeTracker: TimeTracker,
+    timeTracker: TimeTracker
   ) => {
     // タイムカード用のWebviewパネルを作成
     const panel = vscode.window.createWebviewPanel(
@@ -22,7 +22,7 @@ export class TimeCardGenerator {
       {
         enableScripts: false, // スクリプト不要
         retainContextWhenHidden: false,
-      },
+      }
     );
 
     // タイムカードのHTMLコンテンツを生成
@@ -74,7 +74,7 @@ export class TimeCardGenerator {
       totalHours,
       totalMinutes,
       totalFiles,
-      fileData,
+      fileData
     );
 
     return `<!DOCTYPE html>
@@ -114,7 +114,7 @@ export class TimeCardGenerator {
     totalHours: number,
     totalMinutes: number,
     totalFiles: number,
-    fileData: FileData[],
+    fileData: FileData[]
   ): string => {
     const width = 800;
     const height = 600;
@@ -143,7 +143,7 @@ export class TimeCardGenerator {
             
             <!-- ヘッダー -->
             <text x="400" y="120" text-anchor="middle" font-family="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" 
-                  font-size="36" font-weight="bold" fill="white">Time Tracker</text>
+                  font-size="36" font-weight="bold" fill="white">Edit Timer</text>
             <text x="400" y="150" text-anchor="middle" font-family="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" 
                   font-size="18" fill="rgba(255,255,255,0.8)">${dateStr}</text>
                   
@@ -177,10 +177,6 @@ export class TimeCardGenerator {
                 `;
               })
               .join("")}
-            
-            <!-- フッター -->
-            <text x="400" y="550" text-anchor="middle" font-family="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" 
-                  font-size="14" fill="rgba(255,255,255,0.8)">Generated with ❤️ by Time Tracker</text>
         </svg>`;
 
     return svg;

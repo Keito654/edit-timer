@@ -37,38 +37,38 @@
   "contributes": {
     "commands": [
       {
-        "command": "timeTracker.toggle",
+        "command": "editTimer.toggle",
         "title": "Toggle Timer",
         "icon": "$(watch)"
       },
       {
-        "command": "timeTracker.refreshView",
+        "command": "editTimer.refreshView",
         "title": "Refresh Time Tracker",
         "icon": "$(refresh)"
       },
       {
-        "command": "timeTracker.openPanel",
+        "command": "editTimer.openPanel",
         "title": "Open Time Tracker",
         "icon": "$(graph)"
       },
       {
-        "command": "timeTracker.generateTimeCard",
+        "command": "editTimer.generateTimeCard",
         "title": "Generate Time Card",
         "icon": "$(preview)"
       },
       {
-        "command": "timeTracker.showFloatingTimer",
+        "command": "editTimer.showFloatingTimer",
         "title": "Show Floating Timer",
         "icon": "$(symbol-method)"
       },
       {
-        "command": "timeTracker.toggleExclude",
+        "command": "editTimer.toggleExclude",
         "title": "Toggle Exclude",
         "icon": "$(eye-closed)"
       },
       {
-        "command": "timeTracker.reset",
-        "title": "Time Tracker: Reset All Time Data",
+        "command": "editTimer.reset",
+        "title": "Edit Timerr: Reset All Time Data",
         "icon": "$(clear-all)"
       }
     ],
@@ -76,31 +76,31 @@
       "explorer": [
         {
           "id": "timeTrackerView",
-          "name": "Time Tracker",
+          "name": "Edit Timer",
           "icon": "$(watch)",
-          "contextualTitle": "Time Tracker"
+          "contextualTitle": "Edit Timer"
         }
       ]
     },
     "menus": {
       "view/title": [
         {
-          "command": "timeTracker.refreshView",
+          "command": "editTimer.refreshView",
           "when": "view == timeTrackerView",
           "group": "navigation"
         },
         {
-          "command": "timeTracker.generateTimeCard",
+          "command": "editTimer.generateTimeCard",
           "when": "view == timeTrackerView",
           "group": "navigation"
         },
         {
-          "command": "timeTracker.showFloatingTimer",
+          "command": "editTimer.showFloatingTimer",
           "when": "view == timeTrackerView",
           "group": "navigation"
         },
         {
-          "command": "timeTracker.reset",
+          "command": "editTimer.reset",
           "when": "view == timeTrackerView",
           "group": "navigation"
         }

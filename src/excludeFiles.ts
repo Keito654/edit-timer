@@ -13,9 +13,9 @@ export class ExcludeFiles {
     // Create status bar item for excluded files
     this.statusBarItem = vscode.window.createStatusBarItem(
       vscode.StatusBarAlignment.Right,
-      99,
+      99
     );
-    this.statusBarItem.command = "timeTracker.toggleExclude";
+    this.statusBarItem.command = "editTimer.toggleExclude";
     this.updateStatusBarItem();
     this.statusBarItem.show();
 
@@ -35,7 +35,7 @@ export class ExcludeFiles {
     this.saveExcludedFiles();
     this.updateStatusBarItem();
     // ツリー表示を即時反映
-    vscode.commands.executeCommand("timeTracker.refreshView");
+    vscode.commands.executeCommand("editTimer.refreshView");
     return this.excludedFiles.has(filePath);
   }
 
@@ -78,7 +78,7 @@ export class ExcludeFiles {
         ) {
           this.toggleFile(filePath);
           vscode.window.showInformationMessage(
-            `${fileName} is now ${this.isExcluded(filePath) ? "excluded" : "included"}`,
+            `${fileName} is now ${this.isExcluded(filePath) ? "excluded" : "included"}`
           );
         } else {
           this.showExcludedFilesList();
@@ -92,7 +92,7 @@ export class ExcludeFiles {
         label: path.basename(filePath),
         description: filePath,
         detail: "Click to include back",
-      }),
+      })
     );
 
     if (items.length === 0) {
@@ -108,7 +108,7 @@ export class ExcludeFiles {
         if (selected?.description) {
           this.toggleFile(selected.description);
           vscode.window.showInformationMessage(
-            `${selected.label} is now included`,
+            `${selected.label} is now included`
           );
         }
       });
@@ -129,7 +129,7 @@ export class ExcludeFiles {
       this.statusBarItem.tooltip =
         "This file is excluded from time tracking. Click to include it.";
       this.statusBarItem.backgroundColor = new vscode.ThemeColor(
-        "statusBarItem.warningBackground",
+        "statusBarItem.warningBackground"
       );
     } else {
       this.statusBarItem.text = "$(eye) Tracked";
@@ -147,7 +147,7 @@ export class ExcludeFiles {
   private loadExcludedFiles(): Set<string> {
     const saved = this.context.workspaceState.get<string[]>(
       "excludedFiles",
-      [],
+      []
     );
     return new Set(saved);
   }
@@ -155,7 +155,7 @@ export class ExcludeFiles {
   private saveExcludedFiles() {
     this.context.workspaceState.update(
       "excludedFiles",
-      Array.from(this.excludedFiles),
+      Array.from(this.excludedFiles)
     );
   }
 }

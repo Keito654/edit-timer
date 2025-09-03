@@ -29,7 +29,7 @@ export class FloatingTimer {
         enableScripts: true,
         retainContextWhenHidden: false,
         localResourceRoots: [],
-      },
+      }
     );
 
     this.panel.webview.html = this.getWebviewContent();
@@ -49,7 +49,7 @@ export class FloatingTimer {
         this.panelDisposables.length = 0;
       },
       null,
-      this.panelDisposables,
+      this.panelDisposables
     );
 
     // メッセージ処理
@@ -63,7 +63,7 @@ export class FloatingTimer {
         }
       },
       undefined,
-      this.panelDisposables,
+      this.panelDisposables
     );
 
     // 可視状態の変更に応じて更新ループを制御
@@ -77,7 +77,7 @@ export class FloatingTimer {
         }
       },
       undefined,
-      this.panelDisposables,
+      this.panelDisposables
     );
 
     // WebView が読み込まれるまで少し待ってから開始（スクリプト準備のため）
@@ -192,7 +192,7 @@ export class FloatingTimer {
         <div class="timer-label">ファイル時間: <span id="currentFileName">作業中のファイルはありません。</span></div>
         <div class="timer-value" id="currentTime">00:00:00</div>
         <div class="controls">
-            <button class="control-btn" id="toggleBtn">⏸️ タイマー停止</button>
+            <button class="control-btn" id="toggleBtn">⏸️ Pause</button>
         </div>
     </div>
 
