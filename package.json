@@ -43,12 +43,12 @@
       },
       {
         "command": "editTimer.refreshView",
-        "title": "Refresh Time Tracker",
+        "title": "Refresh Edit Timer",
         "icon": "$(refresh)"
       },
       {
         "command": "editTimer.openPanel",
-        "title": "Open Time Tracker",
+        "title": "Open Edit Timer",
         "icon": "$(graph)"
       },
       {
