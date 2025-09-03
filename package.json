@@ -1,0 +1,136 @@
+{
+  "name": "edit-timer",
+  "displayName": "edit-timer",
+  "description": "Measure work time by file.",
+  "version": "0.0.1",
+  "publisher": "Keito654",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Keito654/edit-timer"
+  },
+  "keywords": [
+    "time",
+    "tracking",
+    "productivity",
+    "timer",
+    "analytics",
+    "timesheet",
+    "timekeeping"
+  ],
+  "categories": [
+    "Other"
+  ],
+  "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#764ba2",
+    "theme": "dark"
+  },
+  "bugs": {
+    "url": "https://github.com/Keito654/edit-timer/issues"
+  },
+  "homepage": "https://github.com/Keito654/edit-timer#readme",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "timeTracker.toggle",
+        "title": "Toggle Timer",
+        "icon": "$(watch)"
+      },
+      {
+        "command": "timeTracker.refreshView",
+        "title": "Refresh Time Tracker",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "timeTracker.openPanel",
+        "title": "Open Time Tracker",
+        "icon": "$(graph)"
+      },
+      {
+        "command": "timeTracker.generateTimeCard",
+        "title": "Generate Time Card",
+        "icon": "$(preview)"
+      },
+      {
+        "command": "timeTracker.showFloatingTimer",
+        "title": "Show Floating Timer",
+        "icon": "$(symbol-method)"
+      },
+      {
+        "command": "timeTracker.toggleExclude",
+        "title": "Toggle Exclude",
+        "icon": "$(eye-closed)"
+      },
+      {
+        "command": "timeTracker.reset",
+        "title": "Time Tracker: Reset All Time Data",
+        "icon": "$(clear-all)"
+      }
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "timeTrackerView",
+          "name": "Time Tracker",
+          "icon": "$(watch)",
+          "contextualTitle": "Time Tracker"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "timeTracker.refreshView",
+          "when": "view == timeTrackerView",
+          "group": "navigation"
+        },
+        {
+          "command": "timeTracker.generateTimeCard",
+          "when": "view == timeTrackerView",
+          "group": "navigation"
+        },
+        {
+          "command": "timeTracker.showFloatingTimer",
+          "when": "view == timeTrackerView",
+          "group": "navigation"
+        },
+        {
+          "command": "timeTracker.reset",
+          "when": "view == timeTrackerView",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "pnpm run package",
+    "compile": "pnpm run check-types && pnpm run lint && node esbuild.js",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "package": "pnpm run check-types && pnpm run lint && node esbuild.js --production",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src",
+    "format": "prettier src --write"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.34.0",
+    "@types/node": "22.x",
+    "@types/vscode": "^1.103.0",
+    "esbuild": "^0.25.9",
+    "eslint": "^9.32.0",
+    "eslint-config-prettier": "^10.1.8",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.42.0"
+  }
+}
