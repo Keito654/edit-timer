@@ -2,7 +2,7 @@
   "name": "edit-timer",
   "displayName": "edit-timer",
   "description": "Measure work time by file.",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "publisher": "Keito654",
   "repository": {
     "type": "git",
