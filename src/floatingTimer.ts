@@ -109,7 +109,7 @@ export class FloatingTimer {
     this.panel.webview.postMessage({
       command: "updateTime",
       totalTime: formatTime(totalTime),
-      currentTime: currentFileTime ? formatTime(currentFileTime) : "00:00:00",
+      currentTime: currentFileTime ? formatTime(currentFileTime) : "--:--:--",
       isTracking: this.timeTracker.getIsTracking(),
       isVisible: this.isVisible,
       currentFile: currentFile,
@@ -188,9 +188,9 @@ export class FloatingTimer {
 <body>
     <div class="timer-container" id="timerContainer">
         <div class="timer-label">合計時間</div>
-        <div class="timer-value" id="totalTime">00:00:00</div>
+        <div class="timer-value" id="totalTime">--:--:--</div>
         <div class="timer-label">ファイル時間: <span id="currentFileName">作業中のファイルはありません。</span></div>
-        <div class="timer-value" id="currentTime">00:00:00</div>
+        <div class="timer-value" id="currentTime">--:--:--</div>
         <div class="controls">
             <button class="control-btn" id="toggleBtn">⏸️ Pause</button>
         </div>

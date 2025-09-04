@@ -17,7 +17,7 @@ export function activate(context: vscode.ExtensionContext) {
     100
   );
   statusBarItem.command = "editTimer.openPanel";
-  statusBarItem.text = "$(watch) 00:00:00";
+  statusBarItem.text = "$(watch) --:--:-- | --:--:--";
   statusBarItem.tooltip = "Edit Timer: Click to open panel";
   statusBarItem.show();
 
