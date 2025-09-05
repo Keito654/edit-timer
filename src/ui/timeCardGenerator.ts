@@ -1,6 +1,6 @@
-import * as vscode from "vscode";
-import * as path from "path";
-import type { TimeTracker } from "./timeTracker";
+import * as vscode from 'vscode';
+import * as path from 'path';
+import type { TimeTracker } from '../core/timeTracker';
 
 interface FileData {
   name: string;
@@ -10,32 +10,22 @@ interface FileData {
 }
 
 export class TimeCardGenerator {
-  static generateTimeCard = (
-    _context: vscode.ExtensionContext,
-    timeTracker: TimeTracker
-  ) => {
-    // タイムカード用のWebviewパネルを作成
-    const panel = vscode.window.createWebviewPanel(
-      "timeCard",
-      "Time Card Preview",
-      vscode.ViewColumn.One,
-      {
-        enableScripts: false, // スクリプト不要
-        retainContextWhenHidden: false,
-      }
-    );
+  public generateTimeCard(_context: vscode.ExtensionContext, timeTracker: TimeTracker): void {
+    const panel = vscode.window.createWebviewPanel('timeCard', 'Time Card Preview', vscode.ViewColumn.One, {
+      enableScripts: false,
+      retainContextWhenHidden: false,
+    });
 
-    // タイムカードのHTMLコンテンツを生成
     panel.webview.html = this.getWebviewContent(timeTracker);
-  };
+  }
 
-  private static getWebviewContent = (timeTracker: TimeTracker): string => {
+  private getWebviewContent(timeTracker: TimeTracker): string {
     const fileTimers = timeTracker.getFileTimers();
     const today = new Date();
-    const dateStr = today.toLocaleDateString("ja-JP", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
+    const dateStr = today.toLocaleDateString('ja-JP', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
     });
 
     // 合計時間の計算
@@ -69,13 +59,7 @@ export class TimeCardGenerator {
     const totalHours = Math.floor(totalTime / 3600000);
     const totalMinutes = Math.floor((totalTime % 3600000) / 60000);
 
-    const svgString = this.generateSVG(
-      dateStr,
-      totalHours,
-      totalMinutes,
-      totalFiles,
-      fileData
-    );
+    const svgString = this.#generateSVG(dateStr, totalHours, totalMinutes, totalFiles, fileData);
 
     return `<!DOCTYPE html>
 <html lang="ja">
@@ -107,19 +91,13 @@ export class TimeCardGenerator {
     </div>
 </body>
 </html>`;
-  };
+  }
 
-  private static generateSVG = (
-    dateStr: string,
-    totalHours: number,
-    totalMinutes: number,
-    totalFiles: number,
-    fileData: FileData[]
-  ): string => {
+  #generateSVG = (dateStr: string, totalHours: number, totalMinutes: number, totalFiles: number, fileData: FileData[]): string => {
     const width = 800;
     const height = 600;
 
-    const svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+    return `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
             <defs>
                 <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
@@ -176,9 +154,7 @@ export class TimeCardGenerator {
                     <rect x="170" y="${y - 8}" width="${file.percent * 4.6}" height="6" rx="3" fill="url(#bar-gradient)"/>
                 `;
               })
-              .join("")}
+              .join('')}
         </svg>`;
-
-    return svg;
   };
 }

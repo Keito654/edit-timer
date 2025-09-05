@@ -1,26 +1,32 @@
-import * as vscode from "vscode";
-import { TimeTracker } from "./timeTracker";
-import { formatTime } from "./utils";
+import * as vscode from 'vscode';
+import { TimeTracker } from '../core/timeTracker';
+import { formatTime } from '../utils';
 
 export class FloatingTimer {
-  private readonly viewType = "timeTrackerFloatingTimer";
-  private panel: vscode.WebviewPanel | undefined;
   private context: vscode.ExtensionContext;
+  private panel: vscode.WebviewPanel | undefined;
   private pendingTimeout: NodeJS.Timeout | undefined;
   private updateInterval: NodeJS.Timeout | undefined;
   private timeTracker: TimeTracker;
-  private isVisible = true;
-  private panelDisposables: vscode.Disposable[] = [];
 
-  constructor(context: vscode.ExtensionContext, timeTracker: TimeTracker) {
-    this.context = context;
+  public constructor(context: vscode.ExtensionContext, timeTracker: TimeTracker) {
     this.timeTracker = timeTracker;
+    this.context = context;
   }
 
-  private createPanel = () => {
+  /** FloatingTimerを起動する */
+  public show() {
+    if (!this.panel) {
+      this.createPanel();
+    } else {
+      this.panel.reveal();
+    }
+  }
+
+  private createPanel() {
     this.panel = vscode.window.createWebviewPanel(
-      this.viewType,
-      "Floating Timer",
+      'timeTrackerFloatingTimer',
+      'Floating Timer',
       {
         viewColumn: vscode.ViewColumn.Beside,
         preserveFocus: true,
@@ -29,94 +35,72 @@ export class FloatingTimer {
         enableScripts: true,
         retainContextWhenHidden: false,
         localResourceRoots: [],
-      }
+      },
     );
 
     this.panel.webview.html = this.getWebviewContent();
 
-    // パネルが閉じられたときの処理
     this.panel.onDidDispose(
       () => {
         this.stopUpdateLoop();
-        if (this.pendingTimeout) {
-          clearTimeout(this.pendingTimeout);
-          this.pendingTimeout = undefined;
-        }
+        clearTimeout(this.pendingTimeout);
+        this.pendingTimeout = undefined;
         this.panel = undefined;
-        this.panelDisposables.forEach((d) => {
-          d.dispose();
-        });
-        this.panelDisposables.length = 0;
       },
       null,
-      this.panelDisposables
+      this.context.subscriptions,
     );
 
     // メッセージ処理
     this.panel.webview.onDidReceiveMessage(
       (message: { command: string }) => {
-        switch (message.command) {
-          case "toggleTracking":
-            this.timeTracker.toggle();
-            this.updateTimer();
-            break;
+        if (message.command === 'toggleTracking') {
+          this.timeTracker.toggle();
+          this.updateTimer();
         }
       },
-      undefined,
-      this.panelDisposables
+      null,
+      this.context.subscriptions,
     );
 
     // 可視状態の変更に応じて更新ループを制御
     this.panel.onDidChangeViewState(
       (e) => {
-        this.isVisible = e.webviewPanel.visible;
-        if (this.isVisible) {
+        if (e.webviewPanel.visible) {
           this.startUpdateLoop();
         } else {
           this.stopUpdateLoop();
         }
       },
       undefined,
-      this.panelDisposables
+      this.context.subscriptions,
     );
 
     // WebView が読み込まれるまで少し待ってから開始（スクリプト準備のため）
     this.pendingTimeout = setTimeout(() => {
-      if (!this.panel) return;
-      if (this.panel.visible) {
+      if (this.panel?.visible) {
         this.startUpdateLoop();
-        this.updateTimer(); // 初回更新
+        this.updateTimer();
       }
     }, 1000);
-  };
+  }
 
-  public show = () => {
-    if (!this.panel) {
-      this.createPanel();
-    } else {
-      this.panel.reveal();
-    }
-  };
-
-  private updateTimer = () => {
+  private updateTimer() {
     if (!this.panel?.visible) return;
-    // パネルが破棄されていないか確認
     if (this.panel?.webview === undefined) return;
 
-    const { totalTime, currentFileTime, currentFile } =
-      this.timeTracker.getCurrentTime();
+    const { totalTime, currentFileTime, currentFile } = this.timeTracker.getCurrentTime();
 
     this.panel.webview.postMessage({
-      command: "updateTime",
+      command: 'updateTime',
       totalTime: formatTime(totalTime),
-      currentTime: currentFileTime ? formatTime(currentFileTime) : "00:00:00",
+      currentTime: currentFileTime ? formatTime(currentFileTime) : '00:00:00',
       isTracking: this.timeTracker.getIsTracking(),
-      isVisible: this.isVisible,
       currentFile: currentFile,
     });
-  };
+  }
 
-  private getWebviewContent = (): string => {
+  private getWebviewContent(): string {
     return `<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -229,16 +213,22 @@ export class FloatingTimer {
     </script>
 </body>
 </html>`;
-  };
+  }
 
-  private startUpdateLoop = () => {
+  /**
+   * タイマーを1秒ごとに更新するsetIntervalを起動する
+   */
+  private startUpdateLoop() {
     if (this.updateInterval) return;
     this.updateInterval = setInterval(() => this.updateTimer(), 1000);
-  };
+  }
 
-  private stopUpdateLoop = () => {
+  /**
+   * タイマーを1秒ごとに更新するsetIntervalを停止する
+   */
+  private stopUpdateLoop() {
     if (!this.updateInterval) return;
     clearInterval(this.updateInterval);
     this.updateInterval = undefined;
-  };
+  }
 }
