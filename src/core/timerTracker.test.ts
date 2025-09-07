@@ -1,6 +1,6 @@
 import { TimeTracker } from "@/core/timeTracker";
 import { Stopwatch } from "ts-stopwatch";
-import { delay } from "./utils";
+import { delay } from "../../tests/utils";
 
 describe("timeTracker", () => {
   vi.mock("ts-stopwatch", { spy: true });

@@ -1,5 +1,7 @@
 import { Stopwatch } from "ts-stopwatch";
 
+export const State = Stopwatch.State;
+
 export class TimeTracker {
   #stopwatch: Stopwatch;
   #savedTime: number;
@@ -23,6 +25,10 @@ export class TimeTracker {
 
   public reset(): void {
     this.#stopwatch.reset();
+  }
+
+  public getState() {
+    return this.#stopwatch.getState();
   }
 
   public getStopwatch() {
