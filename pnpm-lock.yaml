@@ -32,6 +32,9 @@ importers:
       prettier:
         specifier: ^3.6.2
         version: 3.6.2
+      ts-stopwatch:
+        specifier: ^0.0.4
+        version: 0.0.4
       typescript:
         specifier: ^5.9.2
         version: 5.9.2
@@ -1398,6 +1401,9 @@ packages:
     engines: {node: '>=18.12'}
     peerDependencies:
       typescript: '>=4.8.4'
+
+  ts-stopwatch@0.0.4:
+    resolution: {integrity: sha512-YUAV6lT4YiCrLckGkUsUp12Eo77NX3DK7HzFuFeDV702g/+Jz/IU80s7Boq+JhrqlocLELdgmpH+/y5XGBxLCQ==}
 
   type-check@0.4.0:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
@@ -2978,6 +2984,8 @@ snapshots:
   ts-api-utils@2.1.0(typescript@5.9.2):
     dependencies:
       typescript: 5.9.2
+
+  ts-stopwatch@0.0.4: {}
 
   type-check@0.4.0:
     dependencies:
