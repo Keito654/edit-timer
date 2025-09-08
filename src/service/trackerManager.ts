@@ -1,4 +1,4 @@
-import { TimeTracker } from "@/core/timeTracker";
+import { TimeTracker } from '@/core/timeTracker';
 
 export interface SavedTimeByFile {
   file: string;
@@ -16,10 +16,7 @@ export class TrackerManager {
   #runningFile: string | null = null;
   #isPausing = false;
 
-  public constructor(
-    savedTimeByFileArr?: SavedTimeByFileArr,
-    pauseState?: PauseState
-  ) {
+  public constructor(savedTimeByFileArr?: SavedTimeByFileArr, pauseState?: PauseState) {
     if (savedTimeByFileArr) {
       for (const savedTimeByFile of savedTimeByFileArr) {
         const tracker = new TimeTracker(savedTimeByFile.time);
@@ -35,9 +32,12 @@ export class TrackerManager {
     this.#isPausing = true;
   }
 
-  public resume(file: string) {
+  public resume() {
     this.#isPausing = false;
-    this.startTimer(file);
+  }
+
+  public isPausing() {
+    return this.#isPausing;
   }
 
   public startTimer(file: string) {
@@ -72,6 +72,13 @@ export class TrackerManager {
     return this.#trackers.get(file);
   }
 
+  public getTrackingFileTime() {
+    if (!this.#runningFile) {
+      return undefined;
+    }
+    return this.#trackers.get(this.#runningFile)?.getTime();
+  }
+
   public getTotalTime() {
     let totaiTime = 0;
     for (const [, trackTimer] of this.#trackers) {
@@ -82,5 +89,9 @@ export class TrackerManager {
 
   public resetAllTimers() {
     this.#trackers.clear();
+  }
+
+  public getAllTimeTrackers() {
+    return new Map(this.#trackers);
   }
 }

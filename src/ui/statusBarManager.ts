@@ -1,15 +1,17 @@
 import * as vscode from 'vscode';
-import { IStatusBarManager } from '../service/timeTrackerService';
-import { TimeData } from '../core/timeTracker';
 import { formatTime } from '../utils';
+import type { TrackerManager } from '@/service/trackerManager';
 
-export class StatusBarManager implements IStatusBarManager {
+export class StatusBarManager {
   private timerItem: vscode.StatusBarItem;
   private excludeItem: vscode.StatusBarItem;
   private context: vscode.ExtensionContext;
 
-  public constructor(context: vscode.ExtensionContext) {
+  #trackerManager: TrackerManager;
+
+  public constructor(context: vscode.ExtensionContext, trackerManager: TrackerManager) {
     this.context = context;
+    this.#trackerManager = trackerManager;
 
     // タイマー用ステータスバー
     this.timerItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
@@ -25,10 +27,10 @@ export class StatusBarManager implements IStatusBarManager {
     context.subscriptions.push(this.timerItem, this.excludeItem);
   }
 
-  public updateTimer(data: TimeData, isTracking: boolean): void {
-    const totalTimeStr = formatTime(data.totalTime);
-    const currentFileTimeStr = formatTime(data.currentFileTime ?? 0);
-    const icon = isTracking ? '$(watch)' : '⏸️';
+  public updateTimer(): void {
+    const totalTimeStr = formatTime(this.#trackerManager.getTotalTime());
+    const currentFileTimeStr = formatTime(this.#trackerManager.getTrackingFileTime() ?? 0);
+    const icon = this.#trackerManager.isPausing() ? '⏸️' : '$(watch)';
 
     this.timerItem.text = `${icon} ${totalTimeStr} | ${currentFileTimeStr}`;
   }

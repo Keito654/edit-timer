@@ -1,16 +1,16 @@
 import * as vscode from 'vscode';
-import { TimeTracker } from '../core/timeTracker';
 import { formatTime } from '../utils';
+import type { TrackerManager } from '@/service/trackerManager';
 
 export class FloatingTimer {
   private context: vscode.ExtensionContext;
   private panel: vscode.WebviewPanel | undefined;
   private pendingTimeout: NodeJS.Timeout | undefined;
   private updateInterval: NodeJS.Timeout | undefined;
-  private timeTracker: TimeTracker;
+  #trackerManager: TrackerManager;
 
-  public constructor(context: vscode.ExtensionContext, timeTracker: TimeTracker) {
-    this.timeTracker = timeTracker;
+  public constructor(context: vscode.ExtensionContext, trackerManager: TrackerManager) {
+    this.#trackerManager = trackerManager;
     this.context = context;
   }
 
@@ -55,7 +55,7 @@ export class FloatingTimer {
     this.panel.webview.onDidReceiveMessage(
       (message: { command: string }) => {
         if (message.command === 'toggleTracking') {
-          this.timeTracker.toggle();
+          this.#trackerManager.toggle();
           this.updateTimer();
         }
       },
@@ -89,13 +89,13 @@ export class FloatingTimer {
     if (!this.panel?.visible) return;
     if (this.panel?.webview === undefined) return;
 
-    const { totalTime, currentFileTime, currentFile } = this.timeTracker.getCurrentTime();
+    const { totalTime, currentFileTime, currentFile } = this.#trackerManager.getCurrentTime();
 
     this.panel.webview.postMessage({
       command: 'updateTime',
       totalTime: formatTime(totalTime),
       currentTime: currentFileTime ? formatTime(currentFileTime) : '00:00:00',
-      isTracking: this.timeTracker.getIsTracking(),
+      isTracking: this.#trackerManager.getIsTracking(),
       currentFile: currentFile,
     });
   }

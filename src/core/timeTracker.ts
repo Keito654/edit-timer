@@ -1,4 +1,4 @@
-import { Stopwatch } from "ts-stopwatch";
+import { Stopwatch } from 'ts-stopwatch';
 
 export const State = Stopwatch.State;
 

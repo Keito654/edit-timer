@@ -1,6 +1,7 @@
-import * as vscode from "vscode";
-import * as path from "path";
-import type { TimeTracker } from "../core/timeTracker";
+import * as vscode from 'vscode';
+import * as path from 'path';
+import type { TrackerManager } from '@/service/trackerManager';
+import { convertToHMS, formatTime } from '@/utils';
 
 interface FileData {
   name: string;
@@ -10,46 +11,34 @@ interface FileData {
 }
 
 export class TimeCardGenerator {
-  public generateTimeCard(
-    _context: vscode.ExtensionContext,
-    timeTracker: TimeTracker
-  ): void {
-    const panel = vscode.window.createWebviewPanel(
-      "timeCard",
-      "Time Card Preview",
-      vscode.ViewColumn.One,
-      {
-        enableScripts: false,
-        retainContextWhenHidden: false,
-      }
-    );
+  public generateTimeCard(_context: vscode.ExtensionContext, timeManager: TrackerManager): void {
+    const panel = vscode.window.createWebviewPanel('timeCard', 'Time Card Preview', vscode.ViewColumn.One, {
+      enableScripts: false,
+      retainContextWhenHidden: false,
+    });
 
-    panel.webview.html = this.getWebviewContent(timeTracker);
+    panel.webview.html = this.getWebviewContent(timeManager);
   }
 
-  private getWebviewContent(timeTracker: TimeTracker): string {
-    const fileTimers = timeTracker.getFileTimers();
+  private getWebviewContent(timeManager: TrackerManager): string {
+    const fileTimers = timeManager.getAllTimeTrackers();
     const today = new Date();
-    const dateStr = today.toLocaleDateString("ja-JP", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
+    const dateStr = today.toLocaleDateString('ja-JP', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
     });
 
     // 合計時間の計算
-    let totalTime = 0;
-    let totalFiles = 0;
+    const totalTime = timeManager.getTotalTime();
+    const totalFiles = fileTimers.size;
     const fileData: FileData[] = [];
-
     for (const [filePath, timer] of fileTimers) {
-      totalTime += timer.totalTime;
-      totalFiles++;
-      const hours = Math.floor(timer.totalTime / 3600000);
-      const minutes = Math.floor((timer.totalTime % 3600000) / 60000);
+      const timeStr = formatTime(timer.getTime());
       fileData.push({
         name: path.basename(filePath),
-        time: `${hours}h ${minutes}m`,
-        timeMs: timer.totalTime,
+        time: timeStr,
+        timeMs: timer.getTime(),
         percent: 0,
       });
     }
@@ -64,16 +53,9 @@ export class TimeCardGenerator {
     // ソート（時間の長い順）
     fileData.sort((a, b) => b.timeMs - a.timeMs);
 
-    const totalHours = Math.floor(totalTime / 3600000);
-    const totalMinutes = Math.floor((totalTime % 3600000) / 60000);
+    const { hours: totalHours, minutes: totalMinutes } = convertToHMS(totalTime);
 
-    const svgString = this.generateSVG(
-      dateStr,
-      totalHours,
-      totalMinutes,
-      totalFiles,
-      fileData
-    );
+    const svgString = this.generateSVG(dateStr, totalHours, totalMinutes, totalFiles, fileData);
 
     return `<!DOCTYPE html>
 <html lang="ja">
@@ -107,13 +89,7 @@ export class TimeCardGenerator {
 </html>`;
   }
 
-  private generateSVG(
-    dateStr: string,
-    totalHours: number,
-    totalMinutes: number,
-    totalFiles: number,
-    fileData: FileData[]
-  ): string {
+  private generateSVG(dateStr: string, totalHours: number, totalMinutes: number, totalFiles: number, fileData: FileData[]): string {
     const width = 800;
     const height = 600;
 
@@ -174,7 +150,7 @@ export class TimeCardGenerator {
                     <rect x="170" y="${y - 8}" width="${file.percent * 4.6}" height="6" rx="3" fill="url(#bar-gradient)"/>
                 `;
               })
-              .join("")}
+              .join('')}
         </svg>`;
   }
 }
