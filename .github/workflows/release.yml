@@ -24,7 +24,7 @@ jobs:
 
 
       - name: Package extension
-        run: pnpm run compile
+        run: pnpm run build
 
       - name: Publish to VS Code Marketplace
         uses: HaaLeo/publish-vscode-extension@v2
