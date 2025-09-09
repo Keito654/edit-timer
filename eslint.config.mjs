@@ -22,7 +22,6 @@ export default defineConfig(
     rules: {
       '@typescript-eslint/unbound-method': 'error',
       '@typescript-eslint/no-invalid-this': 'error',
-      '@typescript-eslint/explicit-member-accessibility': 'error',
     },
   },
   eslintConfigPrettier,
