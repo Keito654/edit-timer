@@ -1,93 +1,98 @@
 import * as vscode from 'vscode';
-import { TimeTrackerService } from './service/timeTrackerService';
-import { StatusBarManager } from './ui/statusBarManager';
-import { TimeTrackerProvider } from './ui/timeTrackerProvider';
-import { TimeCardGenerator } from './ui/timeCardGenerator';
-import { FloatingTimer } from './ui/floatingTimer';
-
-let timeTrackerService: TimeTrackerService;
-let statusBarManager: StatusBarManager;
-let timeTrackerProvider: TimeTrackerProvider;
-let floatingTimer: FloatingTimer | undefined;
+import { getTreeDataProvider } from './ui/getTreeDataProvider';
+import { store } from './app/store';
+import { getTimerStatusBarView } from './ui/statusBarManager';
 
 export function activate(context: vscode.ExtensionContext) {
-  // Service層の初期化
-  timeTrackerService = new TimeTrackerService(context);
+  const treeProvider = getTreeDataProvider();
+  if (vscode.window.activeTextEditor?.document.fileName) {
+    store.getState().startTimer(vscode.window.activeTextEditor.document.fileName);
+  }
 
-  // UI層の初期化
-  statusBarManager = new StatusBarManager(context);
-  timeTrackerProvider = new TimeTrackerProvider(context, timeTrackerService.getTimeTracker());
+  // // 初期コンテキストキー設定
+  // vscode.commands.executeCommand('setContext', 'editTimer.isTracking', timeTrackerService.getTimeTracker().getIsTracking());
 
-  // 依存性注入
-  timeTrackerService.setStatusBarManager(statusBarManager);
-  timeTrackerService.setViewProvider(timeTrackerProvider);
+  // // コマンドの登録
+  // const toggleCommand = vscode.commands.registerCommand('editTimer.toggle', () => {
+  //   timeTrackerService.toggle();
+  // });
 
-  // 初期コンテキストキー設定
-  vscode.commands.executeCommand('setContext', 'editTimer.isTracking', timeTrackerService.getTimeTracker().getIsTracking());
+  // const pauseCommand = vscode.commands.registerCommand('editTimer.pause', () => {
+  //   timeTrackerService.pause();
+  // });
 
-  // コマンドの登録
-  const toggleCommand = vscode.commands.registerCommand('editTimer.toggle', () => {
-    timeTrackerService.toggle();
-  });
+  // const resumeCommand = vscode.commands.registerCommand('editTimer.resume', () => {
+  //   timeTrackerService.resume();
+  // });
 
-  const pauseCommand = vscode.commands.registerCommand('editTimer.pause', () => {
-    timeTrackerService.pause();
-  });
+  // const openPanelCommand = vscode.commands.registerCommand('editTimer.openPanel', () => {
+  //   vscode.commands.executeCommand('workbench.view.explorer');
+  //   vscode.commands.executeCommand('timeTrackerView.focus');
+  // });
 
-  const resumeCommand = vscode.commands.registerCommand('editTimer.resume', () => {
-    timeTrackerService.resume();
-  });
+  // const resetCommand = vscode.commands.registerCommand('editTimer.reset', async () => {
+  //   await timeTrackerService.resetAllTimers();
+  // });
 
-  const openPanelCommand = vscode.commands.registerCommand('editTimer.openPanel', () => {
-    vscode.commands.executeCommand('workbench.view.explorer');
-    vscode.commands.executeCommand('timeTrackerView.focus');
-  });
+  // const toggleExcludeCommand = vscode.commands.registerCommand('editTimer.toggleExclude', () => {
+  //   timeTrackerService.showExcludeDialog();
+  // });
 
-  const resetCommand = vscode.commands.registerCommand('editTimer.reset', async () => {
-    await timeTrackerService.resetAllTimers();
-  });
+  // const generateTimeCardCommand = vscode.commands.registerCommand('editTimer.generateTimeCard', () => {
+  //   new TimeCardGenerator().generateTimeCard(context, timeTrackerService.getTimeTracker());
+  // });
 
-  const toggleExcludeCommand = vscode.commands.registerCommand('editTimer.toggleExclude', () => {
-    timeTrackerService.showExcludeDialog();
-  });
+  // const showFloatingTimerCommand = vscode.commands.registerCommand('editTimer.showFloatingTimer', () => {
+  //   floatingTimer ??= new FloatingTimer(context, timeTrackerService.getTimeTracker());
+  //   floatingTimer.show();
+  // });
 
-  const generateTimeCardCommand = vscode.commands.registerCommand('editTimer.generateTimeCard', () => {
-    new TimeCardGenerator().generateTimeCard(context, timeTrackerService.getTimeTracker());
-  });
-
-  const showFloatingTimerCommand = vscode.commands.registerCommand('editTimer.showFloatingTimer', () => {
-    floatingTimer ??= new FloatingTimer(context, timeTrackerService.getTimeTracker());
-    floatingTimer.show();
-  });
+  const timerStatusBar = getTimerStatusBarView();
+  timerStatusBar.render();
 
   const refreshViewCommand = vscode.commands.registerCommand('editTimer.refreshView', () => {
-    timeTrackerProvider.refresh();
+    treeProvider.refresh();
   });
 
   // TreeViewの登録
-  const tree = vscode.window.registerTreeDataProvider('timeTrackerView', timeTrackerProvider);
+  const tree = vscode.window.registerTreeDataProvider('timeTrackerView', treeProvider);
 
   // エディタ変更の監視
   const editorChanged = vscode.window.onDidChangeActiveTextEditor((editor) => {
-    timeTrackerService.onEditorChange(editor);
+    const fsPath = editor?.document.uri.fsPath;
+    if (fsPath) {
+      store.getState().switchTimer(fsPath);
+    } else {
+      store.getState().stopTimer();
+      store.getState().setTrackingFIle(null);
+    }
   });
 
+  const globalTimer = setInterval(() => {
+    treeProvider.refresh();
+    timerStatusBar.render();
+  }, 1000);
+
   context.subscriptions.push(
-    toggleCommand,
-    pauseCommand,
-    resumeCommand,
-    openPanelCommand,
-    resetCommand,
-    toggleExcludeCommand,
-    generateTimeCardCommand,
-    showFloatingTimerCommand,
+    // toggleCommand,
+    // pauseCommand,
+    // resumeCommand,
+    // openPanelCommand,
+    // resetCommand,
+    // toggleExcludeCommand,
+    // generateTimeCardCommand,
+    // showFloatingTimerCommand,
+    timerStatusBar,
     refreshViewCommand,
     tree,
     editorChanged,
-    statusBarManager
+    {
+      dispose: () => {
+        clearInterval(globalTimer);
+      },
+    },
   );
 }
 
-export function deactivate() {
-  timeTrackerService?.dispose();
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+export function deactivate() {}

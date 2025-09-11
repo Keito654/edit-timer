@@ -1,59 +1,63 @@
 import * as vscode from 'vscode';
-import { IStatusBarManager } from '../service/timeTrackerService';
-import { TimeData } from '../core/timeTracker';
 import { formatTime } from '../utils';
+import { getTime, getTotalTime } from '../features/fileTimeTracker/selector';
+import { store } from '../app/store';
 
-export class StatusBarManager implements IStatusBarManager {
-  private timerItem: vscode.StatusBarItem;
-  private excludeItem: vscode.StatusBarItem;
-  private context: vscode.ExtensionContext;
+export const getTimerStatusBarView = () => {
+  const timerItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
+  timerItem.command = 'editTimer.openPanel';
+  timerItem.tooltip = 'Edit Timer: Click to open panel';
 
-  public constructor(context: vscode.ExtensionContext) {
-    this.context = context;
+  const render = () => {
+    const totalTimeStr = formatTime(getTotalTime());
+    const currentFile = store.getState().currentTrackingFile;
+    const currentFileTimeStr = currentFile ? formatTime(getTime(currentFile)) : '--:--:--';
+    const icon = store.getState().isTracking ? '$(watch)' : '⏸️';
 
-    // タイマー用ステータスバー
-    this.timerItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-    this.timerItem.command = 'editTimer.openPanel';
-    this.timerItem.tooltip = 'Edit Timer: Click to open panel';
-    this.timerItem.text = '$(watch) 00:00:00 | 00:00:00';
-    this.timerItem.show();
+    timerItem.text = `${icon} ${totalTimeStr} | ${currentFileTimeStr}`;
+    timerItem.show();
+  };
 
-    // 除外ファイル用ステータスバー
-    this.excludeItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 99);
-    this.excludeItem.command = 'editTimer.toggleExclude';
+  const dispose = () => {
+    timerItem.dispose();
+  };
 
-    context.subscriptions.push(this.timerItem, this.excludeItem);
-  }
+  return {
+    render,
+    dispose,
+  };
+};
 
-  public updateTimer(data: TimeData, isTracking: boolean): void {
-    const totalTimeStr = formatTime(data.totalTime);
-    const currentFileTimeStr = formatTime(data.currentFileTime ?? 0);
-    const icon = isTracking ? '$(watch)' : '⏸️';
+export const getIsTrackingBarView = (activeTextEditor: vscode.TextDocument) => {
+  const excludeItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 99);
+  excludeItem.command = 'editTimer.toggleExclude';
+  excludeItem.tooltip = 'Edit Timer: ';
 
-    this.timerItem.text = `${icon} ${totalTimeStr} | ${currentFileTimeStr}`;
-  }
-
-  public updateExcludeStatus(filePath: string | undefined, isExcluded: boolean): void {
-    if (!filePath) {
-      this.excludeItem.hide();
+  const render = () => {
+    if (!activeTextEditor) {
+      excludeItem.hide();
       return;
     }
 
-    if (isExcluded) {
-      this.excludeItem.text = '$(eye-closed) Excluded';
-      this.excludeItem.tooltip = 'Edit Timer: This file is excluded from time tracking. Click to include it.';
-      this.excludeItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
+    if (store.getState().excludeFiles) {
+      excludeItem.text = '$(eye-closed) Excluded';
+      excludeItem.tooltip = 'Edit Timer: This file is excluded from time tracking. Click to include it.';
+      excludeItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
     } else {
-      this.excludeItem.text = '$(eye) Tracked';
-      this.excludeItem.tooltip = 'Edit Timer: This file is being tracked. Click to exclude it.';
-      this.excludeItem.backgroundColor = undefined;
+      excludeItem.text = '$(eye) Tracked';
+      excludeItem.tooltip = 'Edit Timer: This file is being tracked. Click to exclude it.';
+      excludeItem.backgroundColor = undefined;
     }
 
-    this.excludeItem.show();
-  }
+    excludeItem.show();
+  };
 
-  public dispose(): void {
-    this.timerItem.dispose();
-    this.excludeItem.dispose();
-  }
-}
+  const dispose = () => {
+    excludeItem.dispose();
+  };
+
+  return {
+    render,
+    dispose,
+  };
+};

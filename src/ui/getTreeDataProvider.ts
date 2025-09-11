@@ -1,38 +1,26 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import type { TimeTracker } from '../core/timeTracker';
 import { formatTime } from '../utils';
-import { IViewProvider } from '../service/timeTrackerService';
+import { getfileTimeTracker, getTime, getTotalTime } from '../features/fileTimeTracker/selector';
 
-export class TimeTrackerProvider implements vscode.TreeDataProvider<TimeTrackerItem>, IViewProvider {
-  private _onDidChangeTreeData: vscode.EventEmitter<TimeTrackerItem | undefined | void> = new vscode.EventEmitter<TimeTrackerItem | undefined | void>();
-  public readonly onDidChangeTreeData: vscode.Event<TimeTrackerItem | undefined | void> = this._onDidChangeTreeData.event;
+export const getTreeDataProvider = (): vscode.TreeDataProvider<TimeTrackerItem> & { refresh: () => void } => {
+  const onDidChangeTreeData = new vscode.EventEmitter<TimeTrackerItem | undefined | void>();
 
-  private timeTracker: TimeTracker;
-
-  public constructor(_context: vscode.ExtensionContext, timeTracker: TimeTracker) {
-    this.timeTracker = timeTracker;
-  }
-
-  public refresh = (): void => {
-    this._onDidChangeTreeData.fire();
+  const refresh = () => {
+    onDidChangeTreeData.fire();
   };
 
-  public getTreeItem = (element: TimeTrackerItem): vscode.TreeItem => {
+  const getTreeItem = (element: TimeTrackerItem) => {
     return element;
   };
 
-  public getChildren = (element?: TimeTrackerItem): Thenable<TimeTrackerItem[]> => {
+  const getChildren = (element?: TimeTrackerItem) => {
     if (!element) {
       // ルートレベル
       const items: TimeTrackerItem[] = [];
 
       // 合計時間の計算
-      const fileTimers = this.timeTracker.getFileTimers();
-      let totalTime = 0;
-      for (const [, timer] of fileTimers) {
-        totalTime += timer.totalTime;
-      }
+      const totalTime = getTotalTime();
 
       // 合計時間
       const totalTimeStr = totalTime > 0 ? formatTime(totalTime) : '0h 0m';
@@ -43,17 +31,17 @@ export class TimeTrackerProvider implements vscode.TreeDataProvider<TimeTrackerI
       const projectItem = new TimeTrackerItem('Active Files', '', 'folder', vscode.TreeItemCollapsibleState.Expanded);
       items.push(projectItem);
 
-      return Promise.resolve(items);
+      return items;
     } else if (element.label === 'Active Files') {
       // ファイルリスト
-      const fileTimers = this.timeTracker.getFileTimers();
+      const fileTimeTracker = getfileTimeTracker();
       const items: TimeTrackerItem[] = [];
 
-      for (const [filePath, timer] of fileTimers) {
+      for (const [filePath] of fileTimeTracker) {
         const fileName = path.basename(filePath);
-        const timeStr = formatTime(timer.totalTime);
+        const timeStr = formatTime(getTime(filePath) ?? 0);
         const description = timeStr;
-        const iconName = this.getFileIcon();
+        const iconName = 'file-text';
 
         const item = new TimeTrackerItem(fileName, description, iconName, vscode.TreeItemCollapsibleState.None);
 
@@ -62,20 +50,19 @@ export class TimeTrackerProvider implements vscode.TreeDataProvider<TimeTrackerI
         items.push(item);
       }
 
-      return Promise.resolve(items);
+      return items;
     }
 
-    return Promise.resolve([]);
+    return [];
   };
 
-  public dispose = (): void => {
-    // 処理なし
+  return {
+    onDidChangeTreeData: onDidChangeTreeData.event,
+    getTreeItem,
+    getChildren,
+    refresh,
   };
-
-  private getFileIcon = (): string => {
-    return 'file-text';
-  };
-}
+};
 
 class TimeTrackerItem extends vscode.TreeItem {
   public constructor(
