@@ -20,7 +20,7 @@ export const getFloatingTimerView = (context: vscode.ExtensionContext) => {
         enableScripts: true,
         retainContextWhenHidden: false,
         localResourceRoots: [],
-      }
+      },
     );
 
     panel.webview.html = getWebviewContent();
@@ -33,7 +33,7 @@ export const getFloatingTimerView = (context: vscode.ExtensionContext) => {
         panel = undefined;
       },
       null,
-      context.subscriptions
+      context.subscriptions,
     );
 
     // メッセージ処理
@@ -45,7 +45,7 @@ export const getFloatingTimerView = (context: vscode.ExtensionContext) => {
         }
       },
       null,
-      context.subscriptions
+      context.subscriptions,
     );
 
     // 可視状態の変更に応じて更新ループを制御
@@ -58,7 +58,7 @@ export const getFloatingTimerView = (context: vscode.ExtensionContext) => {
         }
       },
       undefined,
-      context.subscriptions
+      context.subscriptions,
     );
 
     // WebView が読み込まれるまで少し待ってから開始（スクリプト準備のため）

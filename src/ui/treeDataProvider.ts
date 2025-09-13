@@ -35,7 +35,7 @@ export const getTreeDataProvider =
           "Total Time",
           totalTimeStr,
           "stopwatch",
-          vscode.TreeItemCollapsibleState.None
+          vscode.TreeItemCollapsibleState.None,
         );
         items.push(totalItem);
 
@@ -44,7 +44,7 @@ export const getTreeDataProvider =
           "Active Files",
           "",
           "folder",
-          vscode.TreeItemCollapsibleState.Expanded
+          vscode.TreeItemCollapsibleState.Expanded,
         );
         items.push(projectItem);
 
@@ -64,7 +64,7 @@ export const getTreeDataProvider =
             fileName,
             description,
             iconName,
-            vscode.TreeItemCollapsibleState.None
+            vscode.TreeItemCollapsibleState.None,
           );
 
           item.tooltip = `${fsPath}\nTotal time: ${timeStr}`;
@@ -91,7 +91,7 @@ class TimeTrackerItem extends vscode.TreeItem {
     public readonly label: string,
     public readonly description: string,
     iconName: string,
-    public readonly collapsibleState: vscode.TreeItemCollapsibleState
+    public readonly collapsibleState: vscode.TreeItemCollapsibleState,
   ) {
     super(label, collapsibleState);
     this.tooltip = `${this.label}: ${this.description}`;

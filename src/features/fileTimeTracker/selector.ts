@@ -4,7 +4,7 @@ import { calcElapse } from "./utils";
 
 export const getTime = (
   state: GlobalStore,
-  args: { now: number; fsPath: FsPath }
+  args: { now: number; fsPath: FsPath },
 ) => {
   const timer = state.fileTimeTracker.get(args.fsPath);
   if (!timer) {

@@ -2,6 +2,7 @@ import { produce } from "immer";
 import type { FsPath } from "../../types";
 import { calcElapse } from "./utils";
 import { StateCreator } from "zustand/vanilla";
+import { GlobalStore } from "../../app/store";
 
 interface Timer {
   startAt: number | null;
@@ -18,9 +19,13 @@ export interface FileTimeTracker {
 }
 
 const startTimerReducer = (
-  state: FileTimeTracker,
-  args: { now: number; fsPath: FsPath }
+  state: GlobalStore,
+  args: { now: number; fsPath: FsPath },
 ) => {
+  if (state.excludeFiles.has(args.fsPath) || !state.isTracking) {
+    return state;
+  }
+
   const hasTracker = state.fileTimeTracker.has(args.fsPath);
   return produce(state, (draft) => {
     if (hasTracker) {
@@ -35,7 +40,7 @@ const startTimerReducer = (
   });
 };
 
-const stopTimerReducer = (state: FileTimeTracker, args: { now: number }) => {
+const stopTimerReducer = (state: GlobalStore, args: { now: number }) => {
   const currentFile = state.currentTrackingFile;
   if (!currentFile) {
     return produce(state, (draft) => {
@@ -57,15 +62,15 @@ const stopTimerReducer = (state: FileTimeTracker, args: { now: number }) => {
 };
 
 const switchTimerReducer = (
-  state: FileTimeTracker,
-  args: { now: number; fsPath: FsPath }
+  state: GlobalStore,
+  args: { now: number; fsPath: FsPath },
 ) => {
   const stopStore = stopTimerReducer(state, { now: args.now });
   return startTimerReducer(stopStore, { now: args.now, fsPath: args.fsPath });
 };
 
 export const createFileTimeTrackerSlice: StateCreator<
-  FileTimeTracker,
+  GlobalStore,
   [],
   [],
   FileTimeTracker

@@ -1,4 +1,5 @@
 import { StateCreator } from "zustand/vanilla";
+import { GlobalStore } from "../../app/store";
 
 export interface IsTracking {
   isTracking: boolean;
@@ -8,7 +9,7 @@ export interface IsTracking {
 }
 
 export const createIsTrackingSlice: StateCreator<
-  IsTracking,
+  GlobalStore,
   [],
   [],
   IsTracking

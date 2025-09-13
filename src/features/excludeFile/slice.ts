@@ -1,25 +1,36 @@
 import { StateCreator } from "zustand/vanilla";
+import { immer } from "zustand/middleware/immer";
 import { FsPath } from "../../types";
+import { GlobalStore } from "../../app/store";
 
 export interface ExcludeFiles {
-  excludeFiles: FsPath[];
+  excludeFiles: Set<FsPath>;
   addExcludeFile: (fsPath: FsPath) => void;
   removeExcludeFile: (fsPath: FsPath) => void;
+  switchExclude: (fsPath: FsPath) => void;
 }
 
 export const createExcludeFileSlice: StateCreator<
-  ExcludeFiles,
+  GlobalStore,
   [],
-  [],
+  [["zustand/immer", never]],
   ExcludeFiles
-> = (set) => ({
-  excludeFiles: [],
+> = immer((set) => ({
+  excludeFiles: new Set<FsPath>(),
   addExcludeFile: (fsPath) =>
-    set((state) => ({
-      excludeFiles: [...state.excludeFiles, fsPath],
-    })),
+    set((state) => {
+      state.excludeFiles.add(fsPath);
+    }),
   removeExcludeFile: (fsPath) =>
-    set((state) => ({
-      excludeFiles: state.excludeFiles.filter((x) => x === fsPath),
-    })),
-});
+    set((state) => {
+      state.excludeFiles.delete(fsPath);
+    }),
+  switchExclude: (fsPath) =>
+    set((state) => {
+      if (state.excludeFiles.has(fsPath)) {
+        state.excludeFiles.delete(fsPath);
+      } else {
+        state.excludeFiles.add(fsPath);
+      }
+    }),
+}));

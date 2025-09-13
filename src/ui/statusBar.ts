@@ -6,7 +6,7 @@ import { store } from "../app/store";
 export const getTimerStatusBarView = () => {
   const timerItem = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Right,
-    100
+    100,
   );
   timerItem.command = "editTimer.openPanel";
   timerItem.tooltip = "Edit Timer: Click to open panel";
@@ -38,7 +38,7 @@ export const getTimerStatusBarView = () => {
 export const getIsTrackingBarView = (activeTextEditor: vscode.TextDocument) => {
   const excludeItem = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Right,
-    99
+    99,
   );
   excludeItem.command = "editTimer.toggleExclude";
   excludeItem.tooltip = "Edit Timer: ";
@@ -54,7 +54,7 @@ export const getIsTrackingBarView = (activeTextEditor: vscode.TextDocument) => {
       excludeItem.tooltip =
         "Edit Timer: This file is excluded from time tracking. Click to include it.";
       excludeItem.backgroundColor = new vscode.ThemeColor(
-        "statusBarItem.warningBackground"
+        "statusBarItem.warningBackground",
       );
     } else {
       excludeItem.text = "$(eye) Tracked";

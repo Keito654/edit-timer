@@ -4,6 +4,7 @@ import { store } from "./app/store";
 import { getTimerStatusBarView } from "./ui/statusBar";
 import { createTimeCardGenerator } from "./ui/timeCardGenerator";
 import { getFloatingTimerView } from "./ui/floatingTimer";
+import { createExcludeFiles } from "./ui/excludeDialog";
 
 export function activate(context: vscode.ExtensionContext) {
   const treeProvider = getTreeDataProvider();
@@ -18,7 +19,7 @@ export function activate(context: vscode.ExtensionContext) {
   vscode.commands.executeCommand(
     "setContext",
     "editTimer.isTracking",
-    store.getState().isTracking
+    store.getState().isTracking,
   );
 
   // // コマンドの登録
@@ -26,21 +27,21 @@ export function activate(context: vscode.ExtensionContext) {
     "editTimer.toggle",
     () => {
       store.getState().switchTracking();
-    }
+    },
   );
 
   const pauseCommand = vscode.commands.registerCommand(
     "editTimer.pause",
     () => {
       store.getState().pause();
-    }
+    },
   );
 
   const resumeCommand = vscode.commands.registerCommand(
     "editTimer.resume",
     () => {
       store.getState().resume();
-    }
+    },
   );
 
   const openPanelCommand = vscode.commands.registerCommand(
@@ -48,29 +49,30 @@ export function activate(context: vscode.ExtensionContext) {
     () => {
       vscode.commands.executeCommand("workbench.view.explorer");
       vscode.commands.executeCommand("timeTrackerView.focus");
-    }
+    },
   );
 
   const resetCommand = vscode.commands.registerCommand(
     "editTimer.reset",
     () => {
       store.getState().reset();
-    }
+    },
   );
 
-  // const toggleExcludeCommand = vscode.commands.registerCommand(
-  //   "editTimer.toggleExclude",
-  //   () => {
-  //     timeTrackerService.showExcludeDialog();
-  //   }
-  // );
+  const excludeFilesApi = createExcludeFiles(context);
+  const toggleExcludeCommand = vscode.commands.registerCommand(
+    "editTimer.toggleExclude",
+    () => {
+      excludeFilesApi.showExcludeDialog();
+    },
+  );
 
   const generateTimeCardCommand = vscode.commands.registerCommand(
     "editTimer.generateTimeCard",
     () => {
       const generator = createTimeCardGenerator();
       generator.generateTimeCard();
-    }
+    },
   );
 
   const showFloatingTimerCommand = vscode.commands.registerCommand(
@@ -78,7 +80,7 @@ export function activate(context: vscode.ExtensionContext) {
     () => {
       const floatingTimer = getFloatingTimerView(context);
       floatingTimer.show();
-    }
+    },
   );
 
   const timerStatusBar = getTimerStatusBarView();
@@ -88,13 +90,13 @@ export function activate(context: vscode.ExtensionContext) {
     "editTimer.refreshView",
     () => {
       treeProvider.refresh();
-    }
+    },
   );
 
   // TreeViewの登録
   const tree = vscode.window.registerTreeDataProvider(
     "timeTrackerView",
-    treeProvider
+    treeProvider,
   );
 
   // エディタ変更の監視
@@ -119,7 +121,7 @@ export function activate(context: vscode.ExtensionContext) {
     resumeCommand,
     openPanelCommand,
     resetCommand,
-    // toggleExcludeCommand,
+    toggleExcludeCommand,
     generateTimeCardCommand,
     showFloatingTimerCommand,
     timerStatusBar,
@@ -130,7 +132,7 @@ export function activate(context: vscode.ExtensionContext) {
       dispose: () => {
         clearInterval(globalTimer);
       },
-    }
+    },
   );
 }
 
