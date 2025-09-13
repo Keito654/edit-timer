@@ -11,14 +11,14 @@ interface FileData {
 }
 
 // クロージャを使用したTimeCardGenerator関数
-export const createTimeCardGenerator = () => {
+export const getTimeCardWebView = () => {
   // プライベート関数をクロージャ内に定義
   const generateSVG = (
     dateStr: string,
     totalHours: number,
     totalMinutes: number,
     totalFiles: number,
-    fileData: FileData[],
+    fileData: FileData[]
   ): string => {
     const width = 800;
     const height = 600;
@@ -105,7 +105,7 @@ export const createTimeCardGenerator = () => {
         time: formatTime(getTime(state, { now, fsPath })),
         timeMs: getTime(state, { now, fsPath }) ?? 0,
         percent: 0,
-      }),
+      })
     );
 
     // パーセンテージを計算
@@ -126,7 +126,7 @@ export const createTimeCardGenerator = () => {
       totalHours,
       totalMinutes,
       totalFiles,
-      fileData,
+      fileData
     );
 
     return `<!DOCTYPE html>
@@ -170,7 +170,7 @@ export const createTimeCardGenerator = () => {
       {
         enableScripts: false,
         retainContextWhenHidden: false,
-      },
+      }
     );
 
     panel.webview.html = getWebviewContent();

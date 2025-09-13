@@ -1,13 +1,15 @@
 import * as vscode from "vscode";
 import { getTreeDataProvider } from "./ui/treeDataProvider";
 import { store } from "./app/store";
-import { getTimerStatusBarView } from "./ui/statusBar";
-import { createTimeCardGenerator } from "./ui/timeCardGenerator";
-import { getFloatingTimerView } from "./ui/floatingTimer";
-import { createExcludeFiles } from "./ui/excludeDialog";
+import { getTimerStatusBar } from "./ui/timerStatusBar";
+import { getTimeCardWebView } from "./ui/timeCardWebView";
+import { getFloatingTimerWebView } from "./ui/floatingTimeWebView";
+import { getExcludeFileDialog } from "./ui/excludeFileDialog";
+import { getExcludeFileStatusBar } from "./ui/excludeFileStatusBar";
 
 export function activate(context: vscode.ExtensionContext) {
-  const treeProvider = getTreeDataProvider();
+  let globalTimer: NodeJS.Timeout | undefined = undefined;
+
   if (vscode.window.activeTextEditor?.document.fileName) {
     store.getState().startTimer({
       now: Date.now(),
@@ -15,33 +17,82 @@ export function activate(context: vscode.ExtensionContext) {
     });
   }
 
-  // // 初期コンテキストキー設定
+  const treeProvider = getTreeDataProvider();
+  const timerStatusBar = getTimerStatusBar();
+  timerStatusBar.render(vscode.window.activeTextEditor?.document.fileName);
+  const excludeFileStatusBar = getExcludeFileStatusBar();
+  excludeFileStatusBar.render(
+    vscode.window.activeTextEditor?.document.fileName
+  );
+
+  const startGlobalTimer = () => {
+    globalTimer = setInterval(() => {
+      treeProvider.refresh();
+      timerStatusBar.render(vscode.window.activeTextEditor?.document.fileName);
+    }, 1000);
+  };
+  const stopGlobalTimer = () => {
+    clearInterval(globalTimer);
+    globalTimer = undefined;
+  };
+
+  // 初期コンテキストキー設定
   vscode.commands.executeCommand(
     "setContext",
     "editTimer.isTracking",
-    store.getState().isTracking,
+    store.getState().isTracking
   );
 
-  // // コマンドの登録
+  // コマンドの登録
   const toggleCommand = vscode.commands.registerCommand(
     "editTimer.toggle",
     () => {
-      store.getState().switchTracking();
-    },
+      store.getState().switchTracking({
+        now: Date.now(),
+        fsPath: vscode.window.activeTextEditor?.document.fileName,
+      });
+      vscode.commands.executeCommand(
+        "setContext",
+        "editTimer.isTracking",
+        store.getState().isTracking
+      );
+
+      if (store.getState().isTracking) {
+        startGlobalTimer();
+      } else {
+        stopGlobalTimer();
+      }
+    }
   );
 
   const pauseCommand = vscode.commands.registerCommand(
     "editTimer.pause",
     () => {
-      store.getState().pause();
-    },
+      const now = Date.now();
+      store.getState().pause({ now });
+      vscode.commands.executeCommand(
+        "setContext",
+        "editTimer.isTracking",
+        store.getState().isTracking
+      );
+      stopGlobalTimer();
+    }
   );
 
   const resumeCommand = vscode.commands.registerCommand(
     "editTimer.resume",
     () => {
-      store.getState().resume();
-    },
+      store.getState().resume({
+        now: Date.now(),
+        fsPath: vscode.window.activeTextEditor?.document.fileName,
+      });
+      vscode.commands.executeCommand(
+        "setContext",
+        "editTimer.isTracking",
+        store.getState().isTracking
+      );
+      startGlobalTimer();
+    }
   );
 
   const openPanelCommand = vscode.commands.registerCommand(
@@ -49,55 +100,65 @@ export function activate(context: vscode.ExtensionContext) {
     () => {
       vscode.commands.executeCommand("workbench.view.explorer");
       vscode.commands.executeCommand("timeTrackerView.focus");
-    },
+    }
   );
 
   const resetCommand = vscode.commands.registerCommand(
     "editTimer.reset",
     () => {
       store.getState().reset();
-    },
+      if (vscode.window.activeTextEditor?.document.fileName) {
+        store.getState().startTimer({
+          now: Date.now(),
+          fsPath: vscode.window.activeTextEditor.document.fileName,
+        });
+      }
+    }
   );
 
-  const excludeFilesApi = createExcludeFiles(context);
+  const excludeFilesApi = getExcludeFileDialog();
   const toggleExcludeCommand = vscode.commands.registerCommand(
     "editTimer.toggleExclude",
     () => {
       excludeFilesApi.showExcludeDialog();
-    },
+      if (vscode.window.activeTextEditor?.document.fileName) {
+        store.getState().startTimer({
+          now: Date.now(),
+          fsPath: vscode.window.activeTextEditor.document.fileName,
+        });
+      }
+    }
   );
 
   const generateTimeCardCommand = vscode.commands.registerCommand(
     "editTimer.generateTimeCard",
     () => {
-      const generator = createTimeCardGenerator();
+      const generator = getTimeCardWebView();
       generator.generateTimeCard();
-    },
+    }
   );
 
   const showFloatingTimerCommand = vscode.commands.registerCommand(
     "editTimer.showFloatingTimer",
     () => {
-      const floatingTimer = getFloatingTimerView(context);
+      const floatingTimer = getFloatingTimerWebView(context);
       floatingTimer.show();
-    },
+    }
   );
-
-  const timerStatusBar = getTimerStatusBarView();
-  timerStatusBar.render();
 
   const refreshViewCommand = vscode.commands.registerCommand(
     "editTimer.refreshView",
     () => {
       treeProvider.refresh();
-    },
+    }
   );
 
-  // TreeViewの登録
   const tree = vscode.window.registerTreeDataProvider(
     "timeTrackerView",
-    treeProvider,
+    treeProvider
   );
+
+  startGlobalTimer();
 
   // エディタ変更の監視
   const editorChanged = vscode.window.onDidChangeActiveTextEditor((editor) => {
@@ -108,12 +169,12 @@ export function activate(context: vscode.ExtensionContext) {
     } else {
       store.getState().stopTimer({ now });
     }
-  });
 
-  const globalTimer = setInterval(() => {
-    treeProvider.refresh();
-    timerStatusBar.render();
-  }, 1000);
+    timerStatusBar.render(vscode.window.activeTextEditor?.document.fileName);
+    excludeFileStatusBar.render(
+      vscode.window.activeTextEditor?.document.fileName
+    );
+  });
 
   context.subscriptions.push(
     toggleCommand,
@@ -126,13 +187,14 @@ export function activate(context: vscode.ExtensionContext) {
     showFloatingTimerCommand,
     timerStatusBar,
     refreshViewCommand,
+    excludeFileStatusBar,
     tree,
     editorChanged,
     {
       dispose: () => {
         clearInterval(globalTimer);
       },
-    },
+    }
   );
 }
 

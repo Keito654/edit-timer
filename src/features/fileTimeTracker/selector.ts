@@ -4,7 +4,7 @@ import { calcElapse } from "./utils";
 
 export const getTime = (
   state: GlobalStore,
-  args: { now: number; fsPath: FsPath },
+  args: { now: number; fsPath: FsPath }
 ) => {
   const timer = state.fileTimeTracker.get(args.fsPath);
   if (!timer) {
@@ -21,13 +21,17 @@ export const getTime = (
 export const getTotalTime = (state: GlobalStore, args: { now: number }) => {
   const timers = state.fileTimeTracker;
   let totalTime = 0;
-  timers.forEach((value) => {
-    if (value.startAt) {
-      totalTime += calcElapse(args.now, value.accumulated, value.startAt);
-    } else {
-      totalTime += value.accumulated;
+  for (const [fsPath, timer] of timers) {
+    if (state.excludeFiles.has(fsPath)) {
+      continue;
     }
-  });
+
+    if (timer.startAt) {
+      totalTime += calcElapse(args.now, timer.accumulated, timer.startAt);
+    } else {
+      totalTime += timer.accumulated;
+    }
+  }
 
   return totalTime;
 };

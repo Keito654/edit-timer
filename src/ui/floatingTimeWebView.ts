@@ -3,7 +3,7 @@ import { formatTime } from "../utils";
 import { store } from "../app/store";
 import { getTime, getTotalTime } from "../features/fileTimeTracker/selector";
 
-export const getFloatingTimerView = (context: vscode.ExtensionContext) => {
+export const getFloatingTimerWebView = (context: vscode.ExtensionContext) => {
   let panel: vscode.WebviewPanel | undefined;
   let pendingTimeout: NodeJS.Timeout | undefined;
   let updateInterval: NodeJS.Timeout | undefined;
@@ -20,7 +20,7 @@ export const getFloatingTimerView = (context: vscode.ExtensionContext) => {
         enableScripts: true,
         retainContextWhenHidden: false,
         localResourceRoots: [],
-      },
+      }
     );
 
     panel.webview.html = getWebviewContent();
@@ -33,19 +33,27 @@ export const getFloatingTimerView = (context: vscode.ExtensionContext) => {
         panel = undefined;
       },
       null,
-      context.subscriptions,
+      context.subscriptions
     );
 
     // メッセージ処理
     panel.webview.onDidReceiveMessage(
       (message: { command: string }) => {
         if (message.command === "toggleTracking") {
-          store.getState().switchTracking();
+          store.getState().switchTracking({
+            now: Date.now(),
+            fsPath: vscode.window.activeTextEditor?.document.fileName,
+          });
+          vscode.commands.executeCommand(
+            "setContext",
+            "editTimer.isTracking",
+            store.getState().isTracking
+          );
           updateTimer();
         }
       },
       null,
-      context.subscriptions,
+      context.subscriptions
     );
 
     // 可視状態の変更に応じて更新ループを制御
@@ -58,7 +66,7 @@ export const getFloatingTimerView = (context: vscode.ExtensionContext) => {
         }
       },
       undefined,
-      context.subscriptions,
+      context.subscriptions
     );
 
     // WebView が読み込まれるまで少し待ってから開始（スクリプト準備のため）
