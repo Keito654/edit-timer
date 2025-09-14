@@ -1,17 +1,11 @@
 import { createStore } from "zustand/vanilla";
 import { enableMapSet } from "immer";
-import {
-  createFileTimeTrackerSlice,
-  FileTimeTracker,
-} from "../features/fileTimeTracker/slice";
-import {
-  createIsTrackingSlice,
-  IsTracking,
-} from "../features/isTracking/slice";
-import {
-  createExcludeFileSlice,
-  ExcludeFiles,
-} from "../features/excludeFile/slice";
+import type { FileTimeTracker } from "../features/fileTimeTracker/slice";
+import { createFileTimeTrackerSlice } from "../features/fileTimeTracker/slice";
+import type { IsTracking } from "../features/isTracking/slice";
+import { createIsTrackingSlice } from "../features/isTracking/slice";
+import type { ExcludeFiles } from "../features/excludeFile/slice";
+import { createExcludeFileSlice } from "../features/excludeFile/slice";
 
 enableMapSet();
 

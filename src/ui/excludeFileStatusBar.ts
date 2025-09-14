@@ -4,7 +4,7 @@ import { store } from "../app/store";
 export const getExcludeFileStatusBar = () => {
   const excludeItem = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Right,
-    99
+    99,
   );
   excludeItem.command = "editTimer.toggleExclude";
   excludeItem.tooltip = "Edit Timer: ";
@@ -20,7 +20,7 @@ export const getExcludeFileStatusBar = () => {
       excludeItem.tooltip =
         "Edit Timer: This file is excluded from time tracking. Click to include it.";
       excludeItem.backgroundColor = new vscode.ThemeColor(
-        "statusBarItem.warningBackground"
+        "statusBarItem.warningBackground",
       );
     } else {
       excludeItem.text = "$(eye) Tracked";

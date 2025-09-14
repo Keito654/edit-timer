@@ -54,7 +54,7 @@ export const getExcludeFileDialog = () => {
       return;
     }
 
-  const filePath = activeEditor.document.uri.fsPath;
+    const filePath = activeEditor.document.uri.fsPath;
     const fileName = path.basename(filePath);
     const isCurrentExcluded = isExcluded(filePath);
 

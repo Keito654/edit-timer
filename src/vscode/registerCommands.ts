@@ -23,7 +23,7 @@ export function registerCommands(
     timer: TimerControls;
     statusBars: StatusBars;
     treeProvider: { refresh: () => void };
-  }
+  },
 ) {
   const { timerStatusBar, excludeFileStatusBar } = deps.statusBars;
 
@@ -32,7 +32,7 @@ export function registerCommands(
     vscode.commands.executeCommand(
       "setContext",
       "editTimer.isTracking",
-      store.getState().isTracking
+      store.getState().isTracking,
     );
 
   const toggle = vscode.commands.registerCommand("editTimer.toggle", () => {
@@ -70,7 +70,7 @@ export function registerCommands(
     () => {
       vscode.commands.executeCommand("workbench.view.explorer");
       vscode.commands.executeCommand("timeTrackerView.focus");
-    }
+    },
   );
 
   const reset = vscode.commands.registerCommand("editTimer.reset", () => {
@@ -90,7 +90,7 @@ export function registerCommands(
       excludeFilesApi.showExcludeDialog();
       // 即時ステータスバー更新（現行ファイルのパスで描画）
       excludeFileStatusBar.render(
-        vscode.window.activeTextEditor?.document.uri.fsPath
+        vscode.window.activeTextEditor?.document.uri.fsPath,
       );
       if (vscode.window.activeTextEditor?.document.uri.fsPath) {
         store.getState().startTimer({
@@ -98,7 +98,7 @@ export function registerCommands(
           fsPath: vscode.window.activeTextEditor.document.uri.fsPath,
         });
       }
-    }
+    },
   );
 
   const generateTimeCard = vscode.commands.registerCommand(
@@ -106,7 +106,7 @@ export function registerCommands(
     () => {
       const generator = getTimeCardWebView();
       generator.generateTimeCard();
-    }
+    },
   );
 
   const showFloatingTimer = vscode.commands.registerCommand(
@@ -114,7 +114,7 @@ export function registerCommands(
     () => {
       const floatingTimer = getFloatingTimerWebView(context);
       floatingTimer.show();
-    }
+    },
   );
 
   const refreshView = vscode.commands.registerCommand(
@@ -122,13 +122,13 @@ export function registerCommands(
     () => {
       deps.treeProvider.refresh();
       // statusbars are updated by the global timer tick; keep this fast
-    }
+    },
   );
 
   // 再描画を初回明示
   timerStatusBar.render(vscode.window.activeTextEditor?.document.uri.fsPath);
   excludeFileStatusBar.render(
-    vscode.window.activeTextEditor?.document.uri.fsPath
+    vscode.window.activeTextEditor?.document.uri.fsPath,
   );
 
   context.subscriptions.push(
@@ -140,6 +140,6 @@ export function registerCommands(
     toggleExclude,
     generateTimeCard,
     showFloatingTimer,
-    refreshView
+    refreshView,
   );
 }

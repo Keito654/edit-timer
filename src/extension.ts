@@ -31,7 +31,7 @@ export function activate(context: vscode.ExtensionContext) {
   vscode.commands.executeCommand(
     "setContext",
     "editTimer.isTracking",
-    store.getState().isTracking
+    store.getState().isTracking,
   );
 
   // コマンドの登録
@@ -44,7 +44,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   const tree = vscode.window.registerTreeDataProvider(
     "timeTrackerView",
-    treeProvider
+    treeProvider,
   );
 
   // グローバルタイマー開始

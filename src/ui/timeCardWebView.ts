@@ -18,7 +18,7 @@ export const getTimeCardWebView = () => {
     totalHours: number,
     totalMinutes: number,
     totalFiles: number,
-    fileData: FileData[]
+    fileData: FileData[],
   ): string => {
     const width = 800;
     const height = 600;
@@ -105,7 +105,7 @@ export const getTimeCardWebView = () => {
         time: formatTime(getTime(state, { now, fsPath })),
         timeMs: getTime(state, { now, fsPath }) ?? 0,
         percent: 0,
-      })
+      }),
     );
 
     // パーセンテージを計算
@@ -126,7 +126,7 @@ export const getTimeCardWebView = () => {
       totalHours,
       totalMinutes,
       totalFiles,
-      fileData
+      fileData,
     );
 
     return `<!DOCTYPE html>
@@ -170,7 +170,7 @@ export const getTimeCardWebView = () => {
       {
         enableScripts: false,
         retainContextWhenHidden: false,
-      }
+      },
     );
 
     panel.webview.html = getWebviewContent();

@@ -6,7 +6,7 @@ import { store } from "../app/store";
 export const getTimerStatusBar = () => {
   const timerItem = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Right,
-    100
+    100,
   );
   timerItem.command = "editTimer.openPanel";
   timerItem.tooltip = "Edit Timer: Click to open panel";

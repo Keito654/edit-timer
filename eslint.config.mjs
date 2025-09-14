@@ -1,14 +1,14 @@
-import eslint from '@eslint/js';
-import { defineConfig } from 'eslint/config';
-import tseslint from 'typescript-eslint';
-import eslintConfigPrettier from 'eslint-config-prettier/flat';
+import eslint from "@eslint/js";
+import { defineConfig } from "eslint/config";
+import tseslint from "typescript-eslint";
+import eslintConfigPrettier from "eslint-config-prettier/flat";
 
 export default defineConfig(
   {
-    files: ['src/**/*.ts'],
+    files: ["src/**/*.ts"],
     languageOptions: {
       ecmaVersion: 2022,
-      sourceType: 'module',
+      sourceType: "module",
       parserOptions: {
         projectService: true,
         tsconfigRootDir: import.meta.dirname,
@@ -20,9 +20,10 @@ export default defineConfig(
   tseslint.configs.stylisticTypeChecked,
   {
     rules: {
-      '@typescript-eslint/unbound-method': 'error',
-      '@typescript-eslint/no-invalid-this': 'error',
+      "@typescript-eslint/unbound-method": "error",
+      "@typescript-eslint/no-invalid-this": "error",
+      "@typescript-eslint/consistent-type-imports": "error",
     },
   },
-  eslintConfigPrettier,
+  eslintConfigPrettier
 );

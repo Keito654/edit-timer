@@ -1,6 +1,6 @@
-import { StateCreator } from "zustand/vanilla";
+import type { StateCreator } from "zustand/vanilla";
 import type { GlobalStore } from "../../app/store";
-import { FsPath } from "../../types";
+import type { FsPath } from "../../types";
 
 export interface IsTracking {
   isTracking: boolean;

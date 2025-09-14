@@ -6,7 +6,7 @@ export function registerEditorEvents(
   deps: {
     timerStatusBar: { render: (fsPath?: string) => void };
     excludeFileStatusBar: { render: (fsPath?: string) => void };
-  }
+  },
 ) {
   const editorChanged = vscode.window.onDidChangeActiveTextEditor((editor) => {
     const fsPath = editor?.document.uri.fsPath;
@@ -17,9 +17,11 @@ export function registerEditorEvents(
       store.getState().stopTimer({ now });
     }
 
-    deps.timerStatusBar.render(vscode.window.activeTextEditor?.document.uri.fsPath);
+    deps.timerStatusBar.render(
+      vscode.window.activeTextEditor?.document.uri.fsPath,
+    );
     deps.excludeFileStatusBar.render(
-      vscode.window.activeTextEditor?.document.uri.fsPath
+      vscode.window.activeTextEditor?.document.uri.fsPath,
     );
   });
 

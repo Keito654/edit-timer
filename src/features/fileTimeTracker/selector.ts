@@ -1,10 +1,10 @@
-import { GlobalStore } from "../../app/store";
-import { FsPath } from "../../types";
+import type { GlobalStore } from "../../app/store";
+import type { FsPath } from "../../types";
 import { calcElapse } from "./utils";
 
 export const getTime = (
   state: GlobalStore,
-  args: { now: number; fsPath: FsPath }
+  args: { now: number; fsPath: FsPath },
 ) => {
   const timer = state.fileTimeTracker.get(args.fsPath);
   if (!timer || state.excludeFiles.has(args.fsPath)) {
