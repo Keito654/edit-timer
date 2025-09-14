@@ -28,14 +28,13 @@ export const getTreeDataProvider =
 
         // 合計時間の計算
         const totalTime = getTotalTime(state, { now });
-
-        // 合計時間
-        const totalTimeStr = totalTime > 0 ? formatTime(totalTime) : "0h 0m";
+        // 合計時間（formatTimeで統一）
+        const totalTimeStr = formatTime(totalTime);
         const totalItem = new TimeTrackerItem(
           "Total Time",
           totalTimeStr,
           "stopwatch",
-          vscode.TreeItemCollapsibleState.None,
+          vscode.TreeItemCollapsibleState.None
         );
         items.push(totalItem);
 
@@ -44,7 +43,7 @@ export const getTreeDataProvider =
           "Active Files",
           "",
           "folder",
-          vscode.TreeItemCollapsibleState.Expanded,
+          vscode.TreeItemCollapsibleState.Expanded
         );
         items.push(projectItem);
 
@@ -64,7 +63,7 @@ export const getTreeDataProvider =
             fileName,
             description,
             iconName,
-            vscode.TreeItemCollapsibleState.None,
+            vscode.TreeItemCollapsibleState.None
           );
 
           item.tooltip = `${fsPath}\nTotal time: ${timeStr}`;
@@ -91,7 +90,7 @@ class TimeTrackerItem extends vscode.TreeItem {
     public readonly label: string,
     public readonly description: string,
     iconName: string,
-    public readonly collapsibleState: vscode.TreeItemCollapsibleState,
+    public readonly collapsibleState: vscode.TreeItemCollapsibleState
   ) {
     super(label, collapsibleState);
     this.tooltip = `${this.label}: ${this.description}`;

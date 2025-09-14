@@ -42,7 +42,7 @@ export const getFloatingTimerWebView = (context: vscode.ExtensionContext) => {
         if (message.command === "toggleTracking") {
           store.getState().switchTracking({
             now: Date.now(),
-            fsPath: vscode.window.activeTextEditor?.document.fileName,
+            fsPath: vscode.window.activeTextEditor?.document.uri.fsPath,
           });
           vscode.commands.executeCommand(
             "setContext",

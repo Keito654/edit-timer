@@ -7,7 +7,7 @@ export const getTime = (
   args: { now: number; fsPath: FsPath }
 ) => {
   const timer = state.fileTimeTracker.get(args.fsPath);
-  if (!timer) {
+  if (!timer || state.excludeFiles.has(args.fsPath)) {
     return null;
   }
 

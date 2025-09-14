@@ -38,10 +38,10 @@ export const getExcludeFileDialog = () => {
   const toggleFile = (filePath: string): boolean => {
     store.getState().switchExclude(filePath);
     vscode.commands.executeCommand("editTimer.refreshView");
-    if (vscode.window.activeTextEditor?.document.fileName) {
+    if (vscode.window.activeTextEditor?.document.uri.fsPath) {
       store.getState().startTimer({
         now: Date.now(),
-        fsPath: vscode.window.activeTextEditor.document.fileName,
+        fsPath: vscode.window.activeTextEditor.document.uri.fsPath,
       });
     }
     return store.getState().excludeFiles.has(filePath);
@@ -54,7 +54,7 @@ export const getExcludeFileDialog = () => {
       return;
     }
 
-    const filePath = activeEditor.document.fileName;
+  const filePath = activeEditor.document.uri.fsPath;
     const fileName = path.basename(filePath);
     const isCurrentExcluded = isExcluded(filePath);
 

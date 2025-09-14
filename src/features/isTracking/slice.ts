@@ -1,5 +1,5 @@
 import { StateCreator } from "zustand/vanilla";
-import { GlobalStore } from "../../app/store";
+import type { GlobalStore } from "../../app/store";
 import { FsPath } from "../../types";
 
 export interface IsTracking {

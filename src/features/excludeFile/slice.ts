@@ -1,7 +1,7 @@
 import { StateCreator } from "zustand/vanilla";
 import { immer } from "zustand/middleware/immer";
-import { FsPath } from "../../types";
-import { GlobalStore } from "../../app/store";
+import type { FsPath } from "../../types";
+import type { GlobalStore } from "../../app/store";
 
 export interface ExcludeFiles {
   excludeFiles: Set<FsPath>;
