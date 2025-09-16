@@ -6,8 +6,13 @@ import { getExcludeFileStatusBar } from "./integration/views/excludeFileStatusBa
 import { createGlobalTimer } from "./globalTimer";
 import { registerCommands } from "./integration/registerCommands";
 import { registerEditorEvents } from "./integration/registerEditorEvents";
+import { createPersistenceManager } from "./integration/presistence";
 
 export function activate(context: vscode.ExtensionContext) {
+  // 永続化マネージャを初期化（データのロード）
+  const persistenceManager = createPersistenceManager(context);
+  persistenceManager.initialize();
+
   // 初期アクティブエディタがあればタイマー開始
 
   if (vscode.window.activeTextEditor?.document.uri.fsPath) {
@@ -40,6 +45,7 @@ export function activate(context: vscode.ExtensionContext) {
     timer: { start: globalTimer.start, stop: globalTimer.stop },
     statusBars: { timerStatusBar, excludeFileStatusBar },
     treeProvider,
+    persistence: { saveNow: () => persistenceManager.saveNow() },
   });
 
   const tree = vscode.window.registerTreeDataProvider(
@@ -57,6 +63,8 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(timerStatusBar, excludeFileStatusBar, tree, {
     dispose: () => {
       globalTimer.dispose();
+      // 拡張機能終了時にデータを保存
+      persistenceManager.dispose();
     },
   });
 }

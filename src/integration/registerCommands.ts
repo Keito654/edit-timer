@@ -17,12 +17,17 @@ export interface StatusBars {
   };
 }
 
+export interface PersistenceControls {
+  saveNow: () => void;
+}
+
 export function registerCommands(
   context: vscode.ExtensionContext,
   deps: {
     timer: TimerControls;
     statusBars: StatusBars;
     treeProvider: { refresh: () => void };
+    persistence: PersistenceControls;
   },
 ) {
   const { timerStatusBar, excludeFileStatusBar } = deps.statusBars;
@@ -47,6 +52,9 @@ export function registerCommands(
     } else {
       deps.timer.stop();
     }
+
+    // 重要な状態変更時に保存
+    deps.persistence.saveNow();
   });
 
   const pause = vscode.commands.registerCommand("editTimer.pause", () => {
@@ -54,6 +62,9 @@ export function registerCommands(
     store.getState().pause({ now });
     setTrackingContext();
     deps.timer.stop();
+
+    // 重要な状態変更時に保存
+    deps.persistence.saveNow();
   });
 
   const resume = vscode.commands.registerCommand("editTimer.resume", () => {
@@ -63,6 +74,9 @@ export function registerCommands(
     });
     setTrackingContext();
     deps.timer.start();
+
+    // 重要な状態変更時に保存
+    deps.persistence.saveNow();
   });
 
   const openPanel = vscode.commands.registerCommand(
@@ -81,6 +95,9 @@ export function registerCommands(
         fsPath: vscode.window.activeTextEditor.document.uri.fsPath,
       });
     }
+
+    // 重要な状態変更時に保存
+    deps.persistence.saveNow();
   });
 
   const excludeFilesApi = getExcludeFileDialog();
@@ -98,6 +115,11 @@ export function registerCommands(
           fsPath: vscode.window.activeTextEditor.document.uri.fsPath,
         });
       }
+
+      // 除外ファイル変更後に保存（ダイアログで変更される可能性があるため少し遅延）
+      setTimeout(() => {
+        deps.persistence.saveNow();
+      }, 1000);
     },
   );
 
@@ -125,6 +147,12 @@ export function registerCommands(
     },
   );
 
+  // デバッグ用の手動保存コマンド
+  const saveData = vscode.commands.registerCommand("editTimer.saveData", () => {
+    deps.persistence.saveNow();
+    vscode.window.showInformationMessage("Edit Timer: Data saved manually");
+  });
+
   // 再描画を初回明示
   timerStatusBar.render(vscode.window.activeTextEditor?.document.uri.fsPath);
   excludeFileStatusBar.render(
@@ -141,5 +169,6 @@ export function registerCommands(
     generateTimeCard,
     showFloatingTimer,
     refreshView,
+    saveData,
   );
 }

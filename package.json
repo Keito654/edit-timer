@@ -80,6 +80,11 @@
         "command": "editTimer.reset",
         "title": "Edit Timerr: Reset All Time Data",
         "icon": "$(clear-all)"
+      },
+      {
+        "command": "editTimer.saveData",
+        "title": "Edit Timer: Save Data",
+        "icon": "$(save)"
       }
     ],
     "views": {
