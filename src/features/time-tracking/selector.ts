@@ -7,7 +7,7 @@ export const getTime = (
   args: { now: number; fsPath: FsPath },
 ) => {
   const timer = state.fileTimeTracker.get(args.fsPath);
-  if (!timer || state.excludeFiles.has(args.fsPath)) {
+  if (!timer) {
     return null;
   }
 
@@ -16,6 +16,17 @@ export const getTime = (
   } else {
     return timer.accumulated;
   }
+};
+
+export const getTimeIfIncluded = (
+  state: GlobalStore,
+  args: { now: number; fsPath: FsPath },
+) => {
+  if (state.excludeFiles.has(args.fsPath)) {
+    return null;
+  }
+
+  return getTime(state, args);
 };
 
 export const getTotalTime = (state: GlobalStore, args: { now: number }) => {

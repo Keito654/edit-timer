@@ -1,6 +1,9 @@
 import * as vscode from "vscode";
 import { formatTime } from "../../utils";
-import { getTime, getTotalTime } from "../../features/time-tracking/selector";
+import {
+  getTimeIfIncluded,
+  getTotalTime,
+} from "../../features/time-tracking/selector";
 import { store } from "../../store";
 
 export const getTimerStatusBar = () => {
@@ -16,7 +19,7 @@ export const getTimerStatusBar = () => {
     const now = Date.now();
     const totalTimeStr = formatTime(getTotalTime(state, { now }));
     const currentFileTimeStr = currentFile
-      ? formatTime(getTime(state, { now, fsPath: currentFile }))
+      ? formatTime(getTimeIfIncluded(state, { now, fsPath: currentFile }))
       : "--:--:--";
     const icon = store.getState().isTracking ? "$(watch)" : "⏸️";
 

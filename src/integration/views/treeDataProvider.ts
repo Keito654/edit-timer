@@ -1,7 +1,10 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import { formatTime } from "../../utils";
-import { getTime, getTotalTime } from "../../features/time-tracking/selector";
+import {
+  getTimeIfIncluded,
+  getTotalTime,
+} from "../../features/time-tracking/selector";
 import { store } from "../../store";
 
 export const getTreeDataProvider =
@@ -55,7 +58,9 @@ export const getTreeDataProvider =
 
         for (const [fsPath] of fileTimeTracker) {
           const fileName = path.basename(fsPath);
-          const timeStr = formatTime(getTime(state, { now, fsPath }) ?? 0);
+          const timeStr = formatTime(
+            getTimeIfIncluded(state, { now, fsPath }) ?? 0,
+          );
           const description = timeStr;
           const iconName = "file-text";
 

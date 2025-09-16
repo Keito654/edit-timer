@@ -1,5 +1,8 @@
 import * as vscode from "vscode";
-import { getTime, getTotalTime } from "../../features/time-tracking/selector";
+import {
+  getTimeIfIncluded,
+  getTotalTime,
+} from "../../features/time-tracking/selector";
 import { store } from "../../store";
 import { formatTime } from "../../utils";
 
@@ -102,8 +105,8 @@ export const getTimeCardWebView = () => {
     state.fileTimeTracker.forEach((_, fsPath) =>
       fileData.push({
         name: fsPath,
-        time: formatTime(getTime(state, { now, fsPath })),
-        timeMs: getTime(state, { now, fsPath }) ?? 0,
+        time: formatTime(getTimeIfIncluded(state, { now, fsPath })),
+        timeMs: getTimeIfIncluded(state, { now, fsPath }) ?? 0,
         percent: 0,
       }),
     );
