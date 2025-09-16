@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
-import { getTime, getTotalTime } from "../../features/fileTimeTracker/selector";
-import { store } from "../../app/store";
+import { getTime, getTotalTime } from "../../features/time-tracking/selector";
+import { store } from "../../store";
 import { formatTime } from "../../utils";
 
 interface FileData {

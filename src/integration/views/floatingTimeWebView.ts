@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { formatTime } from "../../utils";
-import { store } from "../../app/store";
-import { getTime, getTotalTime } from "../../features/fileTimeTracker/selector";
+import { store } from "../../store";
+import { getTime, getTotalTime } from "../../features/time-tracking/selector";
 
 export const getFloatingTimerWebView = (context: vscode.ExtensionContext) => {
   let panel: vscode.WebviewPanel | undefined;

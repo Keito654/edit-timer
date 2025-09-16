@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { getTreeDataProvider } from "./integration/views/treeDataProvider";
-import { store } from "./app/store";
+import { store } from "./store";
 import { getTimerStatusBar } from "./integration/views/timerStatusBar";
 import { getExcludeFileStatusBar } from "./integration/views/excludeFileStatusBar";
 import { createGlobalTimer } from "./globalTimer";

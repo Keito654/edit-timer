@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import * as path from "path";
-import { store } from "../../app/store";
+import { store } from "../../store";
 
 export const getExcludeFileDialog = () => {
   const showExcludedFilesList = () => {

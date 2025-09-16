@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import { formatTime } from "../../utils";
-import { getTime, getTotalTime } from "../../features/fileTimeTracker/selector";
-import { store } from "../../app/store";
+import { getTime, getTotalTime } from "../../features/time-tracking/selector";
+import { store } from "../../store";
 
 export const getTreeDataProvider =
   (): vscode.TreeDataProvider<TimeTrackerItem> & { refresh: () => void } => {

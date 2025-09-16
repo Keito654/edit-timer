@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { store } from "../app/store";
+import { store } from "../store";
 
 export function registerEditorEvents(
   context: vscode.ExtensionContext,

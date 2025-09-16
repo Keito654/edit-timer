@@ -14,7 +14,7 @@ This is a VS Code extension that measures per-file editing time. It’s bundled 
   - `excludeFile` (Set of excluded `fsPath`s)
   - `immer.enableMapSet()` is enabled; maps/sets are used in state.
 - Selectors/utilities used across UI:
-  - `getTotalTime(state, { now })` and `getTime(state, { now, fsPath })` from `src/app/features/fileTimeTracker/selector`.
+  - `getTotalTime(state, { now })` and `getTime(state, { now, fsPath })` from `src/features/time-tracking/selector`.
   - `formatTime(ms)` from `src/utils.ts` for rendering time strings.
 - UI surfaces:
   - Explorer tree view `timeTrackerView`: `src/ui/treeDataProvider.ts` (shows total time and active files).

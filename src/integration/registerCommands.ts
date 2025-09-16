@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { store } from "../app/store";
+import { store } from "../store";
 import { getTimeCardWebView } from "./views/timeCardWebView";
 import { getFloatingTimerWebView } from "./views/floatingTimeWebView";
 import { getExcludeFileDialog } from "./views/excludeFileDialog";
