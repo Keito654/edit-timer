@@ -1,11 +1,11 @@
 import * as vscode from "vscode";
 import * as path from "path";
-import { store } from "../app/store";
+import { store } from "../../app/store";
 
 export const getExcludeFileDialog = () => {
   const showExcludedFilesList = () => {
     const items: vscode.QuickPickItem[] = Array.from(
-      store.getState().excludeFiles
+      store.getState().excludeFiles,
     ).map((filePath) => ({
       label: path.basename(filePath),
       description: filePath,
@@ -25,7 +25,7 @@ export const getExcludeFileDialog = () => {
         if (selected?.description) {
           toggleFile(selected.description);
           vscode.window.showInformationMessage(
-            `${selected.label} is now included`
+            `${selected.label} is now included`,
           );
         }
       });
@@ -86,7 +86,7 @@ export const getExcludeFileDialog = () => {
         ) {
           toggleFile(filePath);
           vscode.window.showInformationMessage(
-            `${fileName} is now ${isExcluded(filePath) ? "excluded" : "included"}`
+            `${fileName} is now ${isExcluded(filePath) ? "excluded" : "included"}`,
           );
         } else {
           showExcludedFilesList();

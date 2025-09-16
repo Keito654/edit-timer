@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
 import { store } from "../app/store";
-import { getTimeCardWebView } from "../ui/timeCardWebView";
-import { getFloatingTimerWebView } from "../ui/floatingTimeWebView";
-import { getExcludeFileDialog } from "../ui/excludeFileDialog";
+import { getTimeCardWebView } from "./views/timeCardWebView";
+import { getFloatingTimerWebView } from "./views/floatingTimeWebView";
+import { getExcludeFileDialog } from "./views/excludeFileDialog";
 
 export interface TimerControls {
   start: () => void;

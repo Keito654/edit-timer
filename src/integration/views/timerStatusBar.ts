@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
-import { formatTime } from "../utils";
-import { getTime, getTotalTime } from "../features/fileTimeTracker/selector";
-import { store } from "../app/store";
+import { formatTime } from "../../utils";
+import { getTime, getTotalTime } from "../../features/fileTimeTracker/selector";
+import { store } from "../../app/store";
 
 export const getTimerStatusBar = () => {
   const timerItem = vscode.window.createStatusBarItem(

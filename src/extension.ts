@@ -1,11 +1,11 @@
 import * as vscode from "vscode";
-import { getTreeDataProvider } from "./ui/treeDataProvider";
+import { getTreeDataProvider } from "./integration/views/treeDataProvider";
 import { store } from "./app/store";
-import { getTimerStatusBar } from "./ui/timerStatusBar";
-import { getExcludeFileStatusBar } from "./ui/excludeFileStatusBar";
+import { getTimerStatusBar } from "./integration/views/timerStatusBar";
+import { getExcludeFileStatusBar } from "./integration/views/excludeFileStatusBar";
 import { createGlobalTimer } from "./globalTimer";
-import { registerCommands } from "./vscode/registerCommands";
-import { registerEditorEvents } from "./vscode/registerEditorEvents";
+import { registerCommands } from "./integration/registerCommands";
+import { registerEditorEvents } from "./integration/registerEditorEvents";
 
 export function activate(context: vscode.ExtensionContext) {
   // 初期アクティブエディタがあればタイマー開始
@@ -31,7 +31,7 @@ export function activate(context: vscode.ExtensionContext) {
   vscode.commands.executeCommand(
     "setContext",
     "editTimer.isTracking",
-    store.getState().isTracking,
+    store.getState().isTracking
   );
 
   // コマンドの登録
@@ -44,7 +44,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   const tree = vscode.window.registerTreeDataProvider(
     "timeTrackerView",
-    treeProvider,
+    treeProvider
   );
 
   // グローバルタイマー開始

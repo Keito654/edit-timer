@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { store } from "../app/store";
+import { store } from "../../app/store";
 
 export const getExcludeFileStatusBar = () => {
   const excludeItem = vscode.window.createStatusBarItem(
