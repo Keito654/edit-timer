@@ -6,7 +6,7 @@ import { getExcludeFileStatusBar } from "./integration/views/excludeFileStatusBa
 import { createGlobalTimer } from "./globalTimer";
 import { registerCommands } from "./integration/registerCommands";
 import { registerEditorEvents } from "./integration/registerEditorEvents";
-import { createPersistenceManager } from "./integration/presistence";
+import { createPersistenceManager } from "./integration/persistence";
 
 export function activate(context: vscode.ExtensionContext) {
   // 永続化マネージャを初期化（データのロード）

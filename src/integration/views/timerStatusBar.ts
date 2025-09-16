@@ -21,7 +21,7 @@ export const getTimerStatusBar = () => {
     const currentFileTimeStr = currentFile
       ? formatTime(getTimeIfIncluded(state, { now, fsPath: currentFile }))
       : "--:--:--";
-    const icon = store.getState().isTracking ? "$(watch)" : "⏸️";
+    const icon = store.getState().isTracking ? "$(watch)" : "$(debug-pause)";
 
     timerItem.text = `${icon} ${totalTimeStr} | ${currentFileTimeStr}`;
     timerItem.show();

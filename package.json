@@ -78,7 +78,7 @@
       },
       {
         "command": "editTimer.reset",
-        "title": "Edit Timerr: Reset All Time Data",
+        "title": "Edit Timer: Reset All Time Data",
         "icon": "$(clear-all)"
       },
       {

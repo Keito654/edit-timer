@@ -9,6 +9,7 @@ import { store } from "../../store";
 
 export const getTreeDataProvider =
   (): vscode.TreeDataProvider<TimeTrackerItem> & { refresh: () => void } => {
+    // TODO: disposeするように修正する
     const onDidChangeTreeData = new vscode.EventEmitter<
       TimeTrackerItem | undefined | void
     >();
@@ -21,6 +22,7 @@ export const getTreeDataProvider =
       return element;
     };
 
+    // TODO: 除外指定ファイルは表示しないように修正する
     const getChildren = (element?: TimeTrackerItem) => {
       const now = Date.now();
       const state = store.getState();
