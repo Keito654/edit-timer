@@ -15,6 +15,7 @@ export interface FileTimeTracker {
   startTimer: (args: { now: number; fsPath: FsPath }) => void;
   stopTimer: (args: { now: number }) => void;
   switchTimer: (args: { now: number; fsPath: FsPath }) => void;
+  loadTimer: (args: { elapsedTime: number; fsPath: FsPath }[]) => void;
   reset: () => void;
 }
 
@@ -69,6 +70,21 @@ const switchTimerReducer = (
   return startTimerReducer(stopStore, { now: args.now, fsPath: args.fsPath });
 };
 
+const loadTimerReducer = (
+  state: GlobalStore,
+  args: { elapsedTime: number; fsPath: FsPath }[],
+): GlobalStore => {
+  return produce(state, (draft) => {
+    draft.fileTimeTracker.clear();
+    args.forEach((arg) => {
+      draft.fileTimeTracker.set(arg.fsPath, {
+        startAt: null,
+        accumulated: arg.elapsedTime,
+      });
+    });
+  });
+};
+
 export const createFileTimeTrackerSlice: StateCreator<
   GlobalStore,
   [],
@@ -80,6 +96,7 @@ export const createFileTimeTrackerSlice: StateCreator<
   startTimer: (args) => set((state) => startTimerReducer(state, args)),
   stopTimer: (args) => set((state) => stopTimerReducer(state, args)),
   switchTimer: (args) => set((state) => switchTimerReducer(state, args)),
+  loadTimer: (args) => set((state) => loadTimerReducer(state, args)),
   reset: () =>
     set(() => ({
       fileTimeTracker: new Map(),

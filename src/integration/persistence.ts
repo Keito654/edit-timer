@@ -78,17 +78,7 @@ const load = (context: vscode.ExtensionContext): boolean => {
   }
 
   // ファイルタイマーデータを復元
-  // Zustandの内部データ構造を直接操作
-  // TODO: 処理がイミュータブルになるように修正する
-  store.setState((state) => {
-    for (const { fsPath, elapsedTime } of fileData) {
-      state.fileTimeTracker.set(fsPath, {
-        startAt: null,
-        accumulated: elapsedTime,
-      });
-    }
-    return state;
-  });
+  store.getState().loadTimer(fileData);
 
   // 追跡状態を復元（現在の状態と異なる場合のみ）
   if (isTracking !== store.getState().isTracking) {

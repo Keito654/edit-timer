@@ -8,8 +8,10 @@ import {
 import { store } from "../../store";
 
 export const getTreeDataProvider =
-  (): vscode.TreeDataProvider<TimeTrackerItem> & { refresh: () => void } => {
-    // TODO: disposeするように修正する
+  (): vscode.TreeDataProvider<TimeTrackerItem> & {
+    refresh: () => void;
+    dispose: () => void;
+  } => {
     const onDidChangeTreeData = new vscode.EventEmitter<
       TimeTrackerItem | undefined | void
     >();
@@ -22,7 +24,6 @@ export const getTreeDataProvider =
       return element;
     };
 
-    // TODO: 除外指定ファイルは表示しないように修正する
     const getChildren = (element?: TimeTrackerItem) => {
       const now = Date.now();
       const state = store.getState();
@@ -33,7 +34,6 @@ export const getTreeDataProvider =
 
         // 合計時間の計算
         const totalTime = getTotalTime(state, { now });
-        // 合計時間（formatTimeで統一）
         const totalTimeStr = formatTime(totalTime);
         const totalItem = new TimeTrackerItem(
           "Total Time",
@@ -59,17 +59,17 @@ export const getTreeDataProvider =
         const items: TimeTrackerItem[] = [];
 
         for (const [fsPath] of fileTimeTracker) {
-          const fileName = path.basename(fsPath);
-          const timeStr = formatTime(
-            getTimeIfIncluded(state, { now, fsPath }) ?? 0,
-          );
-          const description = timeStr;
-          const iconName = "file-text";
+          const time = getTimeIfIncluded(state, { now, fsPath });
 
+          if (time === null) {
+            continue;
+          }
+
+          const timeStr = formatTime(time);
           const item = new TimeTrackerItem(
-            fileName,
-            description,
-            iconName,
+            path.basename(fsPath),
+            formatTime(time),
+            "file-text",
             vscode.TreeItemCollapsibleState.None,
           );
 
@@ -84,11 +84,16 @@ export const getTreeDataProvider =
       return [];
     };
 
+    const dispose = () => {
+      onDidChangeTreeData.dispose();
+    };
+
     return {
       onDidChangeTreeData: onDidChangeTreeData.event,
       getTreeItem,
       getChildren,
       refresh,
+      dispose,
     };
   };
 

@@ -14,7 +14,6 @@ export function activate(context: vscode.ExtensionContext) {
   persistenceManager.initialize();
 
   // 初期アクティブエディタがあればタイマー開始
-
   if (vscode.window.activeTextEditor?.document.uri.fsPath) {
     store.getState().startTimer({
       now: Date.now(),
@@ -60,13 +59,14 @@ export function activate(context: vscode.ExtensionContext) {
   // エディタイベント登録
   registerEditorEvents(context, { timerStatusBar, excludeFileStatusBar });
 
-  context.subscriptions.push(timerStatusBar, excludeFileStatusBar, tree, {
-    dispose: () => {
-      globalTimer.dispose();
-      // 拡張機能終了時にデータを保存
-      persistenceManager.dispose();
-    },
-  });
+  context.subscriptions.push(
+    timerStatusBar,
+    excludeFileStatusBar,
+    tree,
+    treeProvider,
+    globalTimer,
+    persistenceManager
+  );
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function

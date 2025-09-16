@@ -1,10 +1,9 @@
-// TODO: 1日以上経過で日数分の時間が切り捨てられるバグを修正する
-// TODO: Dateを生成するのではなく、整数演算にすることでパフォーマンスを向上させる
 export const convertToHMS = (milliseconds: number) => {
-  const dateObj = new Date(milliseconds);
-  const hours = dateObj.getUTCHours();
-  const minutes = dateObj.getUTCMinutes();
-  const seconds = dateObj.getUTCSeconds();
+  const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
+  const seconds = totalSeconds % 60;
+  const totalMinutes = Math.floor(totalSeconds / 60);
+  const minutes = totalMinutes % 60;
+  const hours = Math.floor(totalMinutes / 60);
 
   return {
     hours,
