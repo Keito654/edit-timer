@@ -40,7 +40,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   // コマンドの登録
   // コマンド登録（モジュールへ委譲）
-  registerCommands(context, {
+  const commandResult = registerCommands(context, {
     timer: { start: globalTimer.start, stop: globalTimer.stop },
     statusBars: { timerStatusBar, excludeFileStatusBar },
     treeProvider,
@@ -65,7 +65,8 @@ export function activate(context: vscode.ExtensionContext) {
     tree,
     treeProvider,
     globalTimer,
-    persistenceManager
+    persistenceManager,
+    commandResult.floatingTimerWebView
   );
 }
 

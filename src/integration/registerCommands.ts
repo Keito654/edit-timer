@@ -29,7 +29,7 @@ export function registerCommands(
     treeProvider: { refresh: () => void };
     persistence: PersistenceControls;
   },
-) {
+): { floatingTimerWebView: vscode.Disposable } {
   const { timerStatusBar, excludeFileStatusBar } = deps.statusBars;
 
   // 初期コンテキストキー設定（呼び出し元で一度行っているが保守用に関数化）
@@ -131,11 +131,13 @@ export function registerCommands(
     },
   );
 
+  // FloatingTimerWebViewのインスタンスを1つだけ保持
+  const floatingTimerWebView = getFloatingTimerWebView(context);
+
   const showFloatingTimer = vscode.commands.registerCommand(
     "editTimer.showFloatingTimer",
     () => {
-      const floatingTimer = getFloatingTimerWebView(context);
-      floatingTimer.show();
+      floatingTimerWebView.show();
     },
   );
 
@@ -171,4 +173,7 @@ export function registerCommands(
     refreshView,
     saveData,
   );
+
+  // FloatingTimerWebViewのインスタンスを返してextension.tsでdisposeできるようにする
+  return { floatingTimerWebView };
 }

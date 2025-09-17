@@ -10,8 +10,31 @@ export const getFloatingTimerWebView = (context: vscode.ExtensionContext) => {
   let panel: vscode.WebviewPanel | undefined;
   let pendingTimeout: NodeJS.Timeout | undefined;
   let updateInterval: NodeJS.Timeout | undefined;
+  let isDisposed = false;
+
+  /**
+   * 全てのタイマーとリソースをクリーンアップする
+   */
+  const cleanupResources = () => {
+    if (updateInterval) {
+      clearInterval(updateInterval);
+      updateInterval = undefined;
+    }
+    if (pendingTimeout) {
+      clearTimeout(pendingTimeout);
+      pendingTimeout = undefined;
+    }
+  };
 
   const createPanel = () => {
+    // 既存のパネルがある場合は再利用
+    if (panel && !isDisposed) {
+      return;
+    }
+
+    // disposed状態をリセット
+    isDisposed = false;
+
     panel = vscode.window.createWebviewPanel(
       "timeTrackerFloatingTimer",
       "Floating Timer",
@@ -28,11 +51,11 @@ export const getFloatingTimerWebView = (context: vscode.ExtensionContext) => {
 
     panel.webview.html = getWebviewContent();
 
+    // disposeイベントハンドラーを改善
     panel.onDidDispose(
       () => {
-        stopUpdateLoop();
-        clearTimeout(pendingTimeout);
-        pendingTimeout = undefined;
+        isDisposed = true;
+        cleanupResources();
         panel = undefined;
       },
       null,
@@ -40,8 +63,10 @@ export const getFloatingTimerWebView = (context: vscode.ExtensionContext) => {
     );
 
     // メッセージ処理
-    panel.webview.onDidReceiveMessage(
+    const messageHandler = panel.webview.onDidReceiveMessage(
       (message: { command: string }) => {
+        if (isDisposed) return; // disposed後は処理しない
+
         if (message.command === "toggleTracking") {
           // 既存のコマンドを呼び出してグローバルタイマーとの同期を保つ
           vscode.commands.executeCommand("editTimer.toggle");
@@ -53,8 +78,10 @@ export const getFloatingTimerWebView = (context: vscode.ExtensionContext) => {
     );
 
     // 可視状態の変更に応じて更新ループを制御
-    panel.onDidChangeViewState(
+    const viewStateHandler = panel.onDidChangeViewState(
       (e) => {
+        if (isDisposed) return; // disposed後は処理しない
+
         if (e.webviewPanel.visible) {
           startUpdateLoop();
         } else {
@@ -67,15 +94,18 @@ export const getFloatingTimerWebView = (context: vscode.ExtensionContext) => {
 
     // WebView が読み込まれるまで少し待ってから開始（スクリプト準備のため）
     pendingTimeout = setTimeout(() => {
-      if (panel?.visible) {
+      if (!isDisposed && panel?.visible) {
         startUpdateLoop();
         updateTimer();
       }
     }, 1000);
+
+    // イベントハンドラーもsubscriptionsに追加してクリーンアップを確実にする
+    context.subscriptions.push(messageHandler, viewStateHandler);
   };
 
   const show = () => {
-    if (panel) {
+    if (panel && !isDisposed) {
       panel.reveal();
     } else {
       createPanel();
@@ -83,27 +113,33 @@ export const getFloatingTimerWebView = (context: vscode.ExtensionContext) => {
   };
 
   const updateTimer = () => {
-    if (!panel?.visible) return;
+    if (isDisposed || !panel?.visible) return;
     if (panel?.webview === undefined) return;
 
-    const now = Date.now();
-    const state = store.getState();
-    const totalTime = getTotalTime(state, { now });
+    try {
+      const now = Date.now();
+      const state = store.getState();
+      const totalTime = getTotalTime(state, { now });
 
-    panel.webview.postMessage({
-      command: "updateTime",
-      totalTime: formatTime(totalTime),
-      currentTime: state.currentTrackingFile
-        ? formatTime(
-            getTimeIfIncluded(state, {
-              now,
-              fsPath: state.currentTrackingFile,
-            }),
-          )
-        : "00:00:00",
-      isTracking: state.isTracking,
-      currentFile: state.currentTrackingFile ?? "",
-    });
+      panel.webview.postMessage({
+        command: "updateTime",
+        totalTime: formatTime(totalTime),
+        currentTime: state.currentTrackingFile
+          ? formatTime(
+              getTimeIfIncluded(state, {
+                now,
+                fsPath: state.currentTrackingFile,
+              }),
+            )
+          : "00:00:00",
+        isTracking: state.isTracking,
+        currentFile: state.currentTrackingFile ?? "",
+      });
+    } catch (error) {
+      // エラーが発生した場合はログ出力して更新ループを停止
+      console.error("Edit Timer: Error updating floating timer", error);
+      stopUpdateLoop();
+    }
   };
 
   const getWebviewContent = (): string => {
@@ -225,8 +261,15 @@ export const getFloatingTimerWebView = (context: vscode.ExtensionContext) => {
    * タイマーを1秒ごとに更新するsetIntervalを起動する
    */
   const startUpdateLoop = () => {
-    if (updateInterval) return;
-    updateInterval = setInterval(() => updateTimer(), 1000);
+    if (updateInterval || isDisposed) return;
+    updateInterval = setInterval(() => {
+      if (isDisposed) {
+        // disposed状態になったら自動的に停止
+        stopUpdateLoop();
+        return;
+      }
+      updateTimer();
+    }, 1000);
   };
 
   /**
@@ -238,7 +281,20 @@ export const getFloatingTimerWebView = (context: vscode.ExtensionContext) => {
     updateInterval = undefined;
   };
 
+  /**
+   * リソースを完全にクリーンアップする（拡張機能終了時に使用）
+   */
+  const dispose = () => {
+    isDisposed = true;
+    cleanupResources();
+    if (panel) {
+      panel.dispose();
+    }
+    panel = undefined;
+  };
+
   return {
     show,
+    dispose, // 拡張機能終了時にクリーンアップできるようにする
   };
 };
