@@ -26,7 +26,8 @@ export function activate(context: vscode.ExtensionContext) {
   const excludeFileStatusBar = getExcludeFileStatusBar();
 
   const globalTimer = createGlobalTimer(() => {
-    treeProvider.refresh();
+    // 差分更新でtotal timeのみを更新（パフォーマンス向上）
+    treeProvider.refreshSpecific("total");
     const current = vscode.window.activeTextEditor?.document.uri.fsPath;
     timerStatusBar.render(current);
   });
@@ -57,7 +58,11 @@ export function activate(context: vscode.ExtensionContext) {
 
   // エディタ変更の監視
   // エディタイベント登録
-  registerEditorEvents(context, { timerStatusBar, excludeFileStatusBar });
+  registerEditorEvents(context, {
+    timerStatusBar,
+    excludeFileStatusBar,
+    treeProvider,
+  });
 
   context.subscriptions.push(
     timerStatusBar,

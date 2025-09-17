@@ -26,7 +26,13 @@ export function registerCommands(
   deps: {
     timer: TimerControls;
     statusBars: StatusBars;
-    treeProvider: { refresh: () => void };
+    treeProvider: {
+      refresh: () => void;
+      refreshSpecific: (
+        type: "total" | "files" | "file",
+        fileId?: string,
+      ) => void;
+    };
     persistence: PersistenceControls;
   },
 ): { floatingTimerWebView: vscode.Disposable } {
@@ -96,6 +102,9 @@ export function registerCommands(
       });
     }
 
+    // reset後は全体を更新
+    deps.treeProvider.refresh();
+
     // 重要な状態変更時に保存
     deps.persistence.saveNow();
   });
@@ -109,6 +118,10 @@ export function registerCommands(
       excludeFileStatusBar.render(
         vscode.window.activeTextEditor?.document.uri.fsPath,
       );
+
+      // exclude状態変更後はファイルリストを更新
+      deps.treeProvider.refreshSpecific("files");
+
       if (vscode.window.activeTextEditor?.document.uri.fsPath) {
         store.getState().startTimer({
           now: Date.now(),
