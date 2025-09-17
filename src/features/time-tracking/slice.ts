@@ -23,26 +23,35 @@ const startTimerReducer = (
   state: GlobalStore,
   args: { now: number; fsPath: FsPath },
 ) => {
+  // 早期リターンで無効な状態をチェック
   if (state.excludeFiles.has(args.fsPath) || !state.isTracking) {
     return state;
   }
 
   const hasTracker = state.fileTimeTracker.has(args.fsPath);
   return produce(state, (draft) => {
+    // 原子的にタイマー状態を更新
     if (hasTracker) {
-      draft.fileTimeTracker.get(args.fsPath)!.startAt = args.now;
+      const existingTimer = draft.fileTimeTracker.get(args.fsPath);
+      if (existingTimer) {
+        existingTimer.startAt = args.now;
+      }
     } else {
+      // 新しいタイマーオブジェクトを原子的に作成
       draft.fileTimeTracker.set(args.fsPath, {
         startAt: args.now,
         accumulated: 0,
       });
     }
+    // 現在追跡中のファイルを原子的に更新
     draft.currentTrackingFile = args.fsPath;
   });
 };
 
 const stopTimerReducer = (state: GlobalStore, args: { now: number }) => {
   const currentFile = state.currentTrackingFile;
+
+  // 現在追跡中のファイルがない場合の早期リターン
   if (!currentFile) {
     return produce(state, (draft) => {
       draft.currentTrackingFile = null;
@@ -52,12 +61,22 @@ const stopTimerReducer = (state: GlobalStore, args: { now: number }) => {
   return produce(state, (draft) => {
     const tracker = draft.fileTimeTracker.get(currentFile);
     if (tracker?.startAt) {
+      // 時間計算を原子的に実行
       const elapse = calcElapse(args.now, tracker.accumulated, tracker.startAt);
-      draft.fileTimeTracker.get(currentFile)!.startAt = null;
-      draft.fileTimeTracker.get(currentFile)!.accumulated = elapse;
+
+      // タイマー状態を原子的に更新
+      const timerToUpdate = draft.fileTimeTracker.get(currentFile);
+      if (timerToUpdate) {
+        timerToUpdate.startAt = null;
+        timerToUpdate.accumulated = elapse;
+      }
     } else {
-      console.error("error: timer is not starting");
+      console.warn(
+        "EditTimer: Attempted to stop timer that was not running for",
+        currentFile,
+      );
     }
+    // 現在追跡中ファイルを原子的にクリア
     draft.currentTrackingFile = null;
   });
 };
