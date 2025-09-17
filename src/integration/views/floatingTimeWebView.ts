@@ -43,15 +43,8 @@ export const getFloatingTimerWebView = (context: vscode.ExtensionContext) => {
     panel.webview.onDidReceiveMessage(
       (message: { command: string }) => {
         if (message.command === "toggleTracking") {
-          store.getState().switchTracking({
-            now: Date.now(),
-            fsPath: vscode.window.activeTextEditor?.document.uri.fsPath,
-          });
-          vscode.commands.executeCommand(
-            "setContext",
-            "editTimer.isTracking",
-            store.getState().isTracking,
-          );
+          // 既存のコマンドを呼び出してグローバルタイマーとの同期を保つ
+          vscode.commands.executeCommand("editTimer.toggle");
           updateTimer();
         }
       },
