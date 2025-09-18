@@ -35,7 +35,10 @@ export function registerCommands(
     };
     persistence: PersistenceControls;
   },
-): { floatingTimerWebView: vscode.Disposable } {
+): {
+  floatingTimerWebView: vscode.Disposable;
+  timeCardWebView: vscode.Disposable;
+} {
   const { timerStatusBar, excludeFileStatusBar } = deps.statusBars;
 
   // 初期コンテキストキー設定（呼び出し元で一度行っているが保守用に関数化）
@@ -136,11 +139,12 @@ export function registerCommands(
     },
   );
 
+  // WebViewインスタンスの作成（disposeできるように）
+  const timeCardWebView = getTimeCardWebView();
   const generateTimeCard = vscode.commands.registerCommand(
     "editTimer.generateTimeCard",
     () => {
-      const generator = getTimeCardWebView();
-      generator.generateTimeCard();
+      timeCardWebView.generateTimeCard();
     },
   );
 
@@ -187,6 +191,9 @@ export function registerCommands(
     saveData,
   );
 
-  // FloatingTimerWebViewのインスタンスを返してextension.tsでdisposeできるようにする
-  return { floatingTimerWebView };
+  // WebViewのインスタンスを返してextension.tsでdisposeできるようにする
+  return {
+    floatingTimerWebView,
+    timeCardWebView,
+  };
 }

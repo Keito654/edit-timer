@@ -93,7 +93,14 @@ const load = (context: vscode.ExtensionContext): boolean => {
  * 永続化管理機能を作成する
  * 起動時のロード、終了時のセーブ、定期的なセーブを管理する
  */
-export const createPersistenceManager = (context: vscode.ExtensionContext) => {
+export interface PersistenceManager {
+  initialize: () => void;
+  dispose: () => void;
+  saveNow: () => void;
+}
+export const createPersistenceManager = (
+  context: vscode.ExtensionContext,
+): PersistenceManager => {
   const AUTO_SAVE_INTERVAL_MS = 5 * 60 * 1000; // 5分間隔
   let autoSaveInterval: NodeJS.Timeout | undefined;
 
