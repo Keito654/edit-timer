@@ -1,10 +1,11 @@
 import * as vscode from "vscode";
-import {
-  getTimeIfIncluded,
-  getTotalTime,
-} from "../../features/time-tracking/selector";
-import { store } from "../../store";
 import { formatTime } from "../../utils";
+import {
+  selectTrackedFileSize,
+  selectTrackers,
+  selectTrackersTotalTime,
+  selectTrackerTimeIfIncluded,
+} from "../../features/timer/selectors";
 
 interface FileData {
   name: string;
@@ -96,30 +97,26 @@ export const getTimeCardWebView = () => {
     });
 
     // 合計時間の計算
-    const state = store.getState();
     const now = Date.now();
-    const totalTime = getTotalTime(state, { now });
-    const totalFiles = state.fileTimeTracker.size;
-    const fileData: FileData[] = [];
+    const totalTime = selectTrackersTotalTime({ now });
+    const totalFiles = selectTrackedFileSize();
 
-    state.fileTimeTracker.forEach((_, fsPath) =>
-      fileData.push({
-        name: fsPath,
-        time: formatTime(getTimeIfIncluded(state, { now, fsPath })),
-        timeMs: getTimeIfIncluded(state, { now, fsPath }) ?? 0,
-        percent: 0,
-      }),
-    );
+    const fileData: FileData[] = selectTrackers()
+      .map((tracker) => {
+        const timeMs =
+          selectTrackerTimeIfIncluded({ now, fsPath: tracker.fsPath }) ?? 0;
 
-    // パーセンテージを計算
-    if (totalTime > 0) {
-      fileData.forEach((file) => {
-        file.percent = Math.round((file.timeMs / totalTime) * 100);
-      });
-    }
-
-    // ソート（時間の長い順）
-    fileData.sort((a, b) => b.timeMs - a.timeMs);
+        return {
+          name: tracker.fsPath,
+          time: formatTime(
+            selectTrackerTimeIfIncluded({ now, fsPath: tracker.fsPath }),
+          ),
+          timeMs,
+          percent: totalTime > 0 ? Math.round((timeMs / totalTime) * 100) : 0,
+        };
+      })
+      .slice()
+      .sort((a, b) => b.timeMs - a.timeMs);
 
     const totalHours = Math.floor(totalTime / 3600000);
     const totalMinutes = Math.floor((totalTime % 3600000) / 60000);

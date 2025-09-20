@@ -1,10 +1,11 @@
 import * as vscode from "vscode";
 import { formatTime } from "../../utils";
-import { store } from "../../store";
 import {
-  getTimeIfIncluded,
-  getTotalTime,
-} from "../../features/time-tracking/selector";
+  selectCurrentTrackingFile,
+  selectIsTracking,
+  selectTrackersTotalTime,
+  selectTrackerTimeIfIncluded,
+} from "../../features/timer/selectors";
 
 export const getFloatingTimerWebView = (context: vscode.ExtensionContext) => {
   let panel: vscode.WebviewPanel | undefined;
@@ -87,22 +88,21 @@ export const getFloatingTimerWebView = (context: vscode.ExtensionContext) => {
     if (panel?.webview === undefined) return;
 
     const now = Date.now();
-    const state = store.getState();
-    const totalTime = getTotalTime(state, { now });
+    const totalTime = selectTrackersTotalTime({ now });
 
     panel.webview.postMessage({
       command: "updateTime",
       totalTime: formatTime(totalTime),
-      currentTime: state.currentTrackingFile
+      currentTime: selectCurrentTrackingFile()
         ? formatTime(
-            getTimeIfIncluded(state, {
+            selectTrackerTimeIfIncluded({
               now,
-              fsPath: state.currentTrackingFile,
+              fsPath: selectCurrentTrackingFile()!,
             }),
           )
         : "00:00:00",
-      isTracking: state.isTracking,
-      currentFile: state.currentTrackingFile ?? "",
+      isTracking: selectIsTracking(),
+      currentFile: selectCurrentTrackingFile() ?? "",
     });
   };
 

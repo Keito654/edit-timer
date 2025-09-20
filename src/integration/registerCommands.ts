@@ -3,6 +3,14 @@ import { store } from "../store";
 import { getTimeCardWebView } from "./views/timeCardWebView";
 import { getFloatingTimerWebView } from "./views/floatingTimeWebView";
 import { getExcludeFileDialog } from "./views/excludeFileDialog";
+import { selectIsTracking } from "../features/timer/selectors";
+import {
+  pauseTracking,
+  resetTimers,
+  resumeTracking,
+  switchIsTracking,
+  switchTimer,
+} from "../features/timer/timerSlice";
 
 export interface TimerControls {
   start: () => void;
@@ -27,7 +35,6 @@ export function registerCommands(
     timer: TimerControls;
     statusBars: StatusBars;
     treeProvider: { refresh: () => void };
-    persistence: PersistenceControls;
   },
 ) {
   const { timerStatusBar, excludeFileStatusBar } = deps.statusBars;
@@ -37,46 +44,41 @@ export function registerCommands(
     vscode.commands.executeCommand(
       "setContext",
       "editTimer.isTracking",
-      store.getState().isTracking,
+      selectIsTracking(),
     );
 
   const toggle = vscode.commands.registerCommand("editTimer.toggle", () => {
-    store.getState().switchTracking({
-      now: Date.now(),
-      fsPath: vscode.window.activeTextEditor?.document.uri.fsPath,
-    });
+    store.dispatch(
+      switchIsTracking({
+        now: Date.now(),
+        fsPath: vscode.window.activeTextEditor?.document.uri.fsPath,
+      }),
+    );
     setTrackingContext();
 
-    if (store.getState().isTracking) {
+    if (selectIsTracking()) {
       deps.timer.start();
     } else {
       deps.timer.stop();
     }
-
-    // 重要な状態変更時に保存
-    deps.persistence.saveNow();
   });
 
   const pause = vscode.commands.registerCommand("editTimer.pause", () => {
     const now = Date.now();
-    store.getState().pause({ now });
+    store.dispatch(pauseTracking({ now }));
     setTrackingContext();
     deps.timer.stop();
-
-    // 重要な状態変更時に保存
-    deps.persistence.saveNow();
   });
 
   const resume = vscode.commands.registerCommand("editTimer.resume", () => {
-    store.getState().resume({
-      now: Date.now(),
-      fsPath: vscode.window.activeTextEditor?.document.uri.fsPath,
-    });
+    store.dispatch(
+      resumeTracking({
+        now: Date.now(),
+        fsPath: vscode.window.activeTextEditor?.document.uri.fsPath,
+      }),
+    );
     setTrackingContext();
     deps.timer.start();
-
-    // 重要な状態変更時に保存
-    deps.persistence.saveNow();
   });
 
   const openPanel = vscode.commands.registerCommand(
@@ -88,16 +90,12 @@ export function registerCommands(
   );
 
   const reset = vscode.commands.registerCommand("editTimer.reset", () => {
-    store.getState().reset();
-    if (vscode.window.activeTextEditor?.document.uri.fsPath) {
-      store.getState().startTimer({
+    store.dispatch(
+      resetTimers({
         now: Date.now(),
-        fsPath: vscode.window.activeTextEditor.document.uri.fsPath,
-      });
-    }
-
-    // 重要な状態変更時に保存
-    deps.persistence.saveNow();
+        fsPath: vscode.window.activeTextEditor?.document.uri.fsPath,
+      }),
+    );
   });
 
   const excludeFilesApi = getExcludeFileDialog();
@@ -109,17 +107,13 @@ export function registerCommands(
       excludeFileStatusBar.render(
         vscode.window.activeTextEditor?.document.uri.fsPath,
       );
-      if (vscode.window.activeTextEditor?.document.uri.fsPath) {
-        store.getState().startTimer({
-          now: Date.now(),
-          fsPath: vscode.window.activeTextEditor.document.uri.fsPath,
-        });
-      }
 
-      // 除外ファイル変更後に保存（ダイアログで変更される可能性があるため少し遅延）
-      setTimeout(() => {
-        deps.persistence.saveNow();
-      }, 1000);
+      store.dispatch(
+        switchTimer({
+          now: Date.now(),
+          fsPath: vscode.window.activeTextEditor?.document.uri.fsPath,
+        }),
+      );
     },
   );
 
@@ -147,12 +141,6 @@ export function registerCommands(
     },
   );
 
-  // デバッグ用の手動保存コマンド
-  const saveData = vscode.commands.registerCommand("editTimer.saveData", () => {
-    deps.persistence.saveNow();
-    vscode.window.showInformationMessage("Edit Timer: Data saved manually");
-  });
-
   // 再描画を初回明示
   timerStatusBar.render(vscode.window.activeTextEditor?.document.uri.fsPath);
   excludeFileStatusBar.render(
@@ -169,6 +157,5 @@ export function registerCommands(
     generateTimeCard,
     showFloatingTimer,
     refreshView,
-    saveData,
   );
 }

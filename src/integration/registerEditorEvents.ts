@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { store } from "../store";
+import { switchTimer } from "../features/timer/timerSlice";
 
 export function registerEditorEvents(
   context: vscode.ExtensionContext,
@@ -11,11 +12,12 @@ export function registerEditorEvents(
   const editorChanged = vscode.window.onDidChangeActiveTextEditor((editor) => {
     const fsPath = editor?.document.uri.fsPath;
     const now = Date.now();
-    if (fsPath) {
-      store.getState().switchTimer({ now, fsPath });
-    } else {
-      store.getState().stopTimer({ now });
-    }
+    store.dispatch(
+      switchTimer({
+        now,
+        fsPath,
+      }),
+    );
 
     deps.timerStatusBar.render(
       vscode.window.activeTextEditor?.document.uri.fsPath,

@@ -2,10 +2,10 @@ import * as vscode from "vscode";
 import * as path from "path";
 import { formatTime } from "../../utils";
 import {
-  getTimeIfIncluded,
-  getTotalTime,
-} from "../../features/time-tracking/selector";
-import { store } from "../../store";
+  selectTrackers,
+  selectTrackersTotalTime,
+  selectTrackerTimeIfIncluded,
+} from "../../features/timer/selectors";
 
 export const getTreeDataProvider =
   (): vscode.TreeDataProvider<TimeTrackerItem> & {
@@ -24,16 +24,12 @@ export const getTreeDataProvider =
       return element;
     };
 
-    const getChildren = (element?: TimeTrackerItem) => {
+    const getChildren = (element?: TimeTrackerItem): TimeTrackerItem[] => {
       const now = Date.now();
-      const state = store.getState();
 
       if (!element) {
-        // ルートレベル
-        const items: TimeTrackerItem[] = [];
-
         // 合計時間の計算
-        const totalTime = getTotalTime(state, { now });
+        const totalTime = selectTrackersTotalTime({ now });
         const totalTimeStr = formatTime(totalTime);
         const totalItem = new TimeTrackerItem(
           "Total Time",
@@ -41,7 +37,6 @@ export const getTreeDataProvider =
           "stopwatch",
           vscode.TreeItemCollapsibleState.None,
         );
-        items.push(totalItem);
 
         // プロジェクトフォルダ
         const projectItem = new TimeTrackerItem(
@@ -50,35 +45,33 @@ export const getTreeDataProvider =
           "folder",
           vscode.TreeItemCollapsibleState.Expanded,
         );
-        items.push(projectItem);
 
-        return items;
+        return [totalItem, projectItem];
       } else if (element.label === "Active Files") {
-        // ファイルリスト
-        const fileTimeTracker = state.fileTimeTracker;
-        const items: TimeTrackerItem[] = [];
+        return selectTrackers()
+          .map((tracker) => {
+            const time = selectTrackerTimeIfIncluded({
+              now,
+              fsPath: tracker.fsPath,
+            });
 
-        for (const [fsPath] of fileTimeTracker) {
-          const time = getTimeIfIncluded(state, { now, fsPath });
+            if (time === null) {
+              return null;
+            }
 
-          if (time === null) {
-            continue;
-          }
+            const timeStr = formatTime(time);
+            const item = new TimeTrackerItem(
+              path.basename(tracker.fsPath),
+              formatTime(time),
+              "file-text",
+              vscode.TreeItemCollapsibleState.None,
+            );
 
-          const timeStr = formatTime(time);
-          const item = new TimeTrackerItem(
-            path.basename(fsPath),
-            formatTime(time),
-            "file-text",
-            vscode.TreeItemCollapsibleState.None,
-          );
-
-          item.tooltip = `${fsPath}\nTotal time: ${timeStr}`;
-          item.contextValue = "fileItem";
-          items.push(item);
-        }
-
-        return items;
+            item.tooltip = `${tracker.fsPath}\nTotal time: ${timeStr}`;
+            item.contextValue = "fileItem";
+            return item;
+          })
+          .filter((x) => x !== null);
       }
 
       return [];

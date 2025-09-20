@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 import { formatTime } from "../../utils";
 import {
-  getTimeIfIncluded,
-  getTotalTime,
-} from "../../features/time-tracking/selector";
-import { store } from "../../store";
+  selectIsTracking,
+  selectTrackersTotalTime,
+  selectTrackerTimeIfIncluded,
+} from "../../features/timer/selectors";
 
 export const getTimerStatusBar = () => {
   const timerItem = vscode.window.createStatusBarItem(
@@ -15,13 +15,12 @@ export const getTimerStatusBar = () => {
   timerItem.tooltip = "Edit Timer: Click to open panel";
 
   const render = (currentFile?: string) => {
-    const state = store.getState();
     const now = Date.now();
-    const totalTimeStr = formatTime(getTotalTime(state, { now }));
+    const totalTimeStr = formatTime(selectTrackersTotalTime({ now }));
     const currentFileTimeStr = currentFile
-      ? formatTime(getTimeIfIncluded(state, { now, fsPath: currentFile }))
+      ? formatTime(selectTrackerTimeIfIncluded({ now, fsPath: currentFile }))
       : "--:--:--";
-    const icon = store.getState().isTracking ? "$(watch)" : "$(debug-pause)";
+    const icon = selectIsTracking() ? "$(watch)" : "$(debug-pause)";
 
     timerItem.text = `${icon} ${totalTimeStr} | ${currentFileTimeStr}`;
     timerItem.show();

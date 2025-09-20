@@ -6,19 +6,18 @@ import { getExcludeFileStatusBar } from "./integration/views/excludeFileStatusBa
 import { createGlobalTimer } from "./globalTimer";
 import { registerCommands } from "./integration/registerCommands";
 import { registerEditorEvents } from "./integration/registerEditorEvents";
-import { createPersistenceManager } from "./integration/persistence";
+import { startTimer } from "./features/timer/timerSlice";
+import { selectIsTracking } from "./features/timer/selectors";
 
 export function activate(context: vscode.ExtensionContext) {
-  // 永続化マネージャを初期化（データのロード）
-  const persistenceManager = createPersistenceManager(context);
-  persistenceManager.initialize();
-
   // 初期アクティブエディタがあればタイマー開始
   if (vscode.window.activeTextEditor?.document.uri.fsPath) {
-    store.getState().startTimer({
-      now: Date.now(),
-      fsPath: vscode.window.activeTextEditor.document.uri.fsPath,
-    });
+    store.dispatch(
+      startTimer({
+        now: Date.now(),
+        fsPath: vscode.window.activeTextEditor.document.uri.fsPath,
+      })
+    );
   }
 
   const treeProvider = getTreeDataProvider();
@@ -35,7 +34,7 @@ export function activate(context: vscode.ExtensionContext) {
   vscode.commands.executeCommand(
     "setContext",
     "editTimer.isTracking",
-    store.getState().isTracking
+    selectIsTracking()
   );
 
   // コマンドの登録
@@ -44,7 +43,6 @@ export function activate(context: vscode.ExtensionContext) {
     timer: { start: globalTimer.start, stop: globalTimer.stop },
     statusBars: { timerStatusBar, excludeFileStatusBar },
     treeProvider,
-    persistence: { saveNow: () => persistenceManager.saveNow() },
   });
 
   const tree = vscode.window.registerTreeDataProvider(
@@ -64,8 +62,7 @@ export function activate(context: vscode.ExtensionContext) {
     excludeFileStatusBar,
     tree,
     treeProvider,
-    globalTimer,
-    persistenceManager
+    globalTimer
   );
 }
 

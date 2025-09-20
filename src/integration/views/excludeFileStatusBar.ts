@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { store } from "../../store";
+import { selectIsExcluded } from "../../features/timer/selectors";
 
 export const getExcludeFileStatusBar = () => {
   const excludeItem = vscode.window.createStatusBarItem(
@@ -15,7 +15,7 @@ export const getExcludeFileStatusBar = () => {
       return;
     }
 
-    if (store.getState().excludeFiles.has(currentFile)) {
+    if (selectIsExcluded(currentFile)) {
       excludeItem.text = "$(eye-closed) Excluded";
       excludeItem.tooltip =
         "Edit Timer: This file is excluded from time tracking. Click to include it.";

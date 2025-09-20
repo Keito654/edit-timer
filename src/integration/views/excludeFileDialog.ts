@@ -1,16 +1,21 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import { store } from "../../store";
+import {
+  selectExcludedFiles,
+  selectIsExcluded,
+} from "../../features/timer/selectors";
+import { startTimer, switchExcluded } from "../../features/timer/timerSlice";
 
 export const getExcludeFileDialog = () => {
   const showExcludedFilesList = () => {
-    const items: vscode.QuickPickItem[] = Array.from(
-      store.getState().excludeFiles,
-    ).map((filePath) => ({
-      label: path.basename(filePath),
-      description: filePath,
-      detail: "Click to include back",
-    }));
+    const items: vscode.QuickPickItem[] = selectExcludedFiles().map(
+      (filePath) => ({
+        label: path.basename(filePath),
+        description: filePath,
+        detail: "Click to include back",
+      }),
+    );
 
     if (items.length === 0) {
       vscode.window.showInformationMessage("No files are currently excluded");
@@ -31,20 +36,19 @@ export const getExcludeFileDialog = () => {
       });
   };
 
-  const isExcluded = (filePath: string): boolean => {
-    return store.getState().excludeFiles.has(filePath);
-  };
-
   const toggleFile = (filePath: string): boolean => {
-    store.getState().switchExclude(filePath);
+    store.dispatch(switchExcluded(filePath));
+
     vscode.commands.executeCommand("editTimer.refreshView");
-    if (vscode.window.activeTextEditor?.document.uri.fsPath) {
-      store.getState().startTimer({
+
+    store.dispatch(
+      startTimer({
         now: Date.now(),
-        fsPath: vscode.window.activeTextEditor.document.uri.fsPath,
-      });
-    }
-    return store.getState().excludeFiles.has(filePath);
+        fsPath: vscode.window.activeTextEditor?.document.uri.fsPath,
+      }),
+    );
+
+    return selectIsExcluded(filePath);
   };
 
   const showExcludeDialog = () => {
@@ -56,7 +60,7 @@ export const getExcludeFileDialog = () => {
 
     const filePath = activeEditor.document.uri.fsPath;
     const fileName = path.basename(filePath);
-    const isCurrentExcluded = isExcluded(filePath);
+    const isCurrentExcluded = selectIsExcluded(filePath);
 
     const action = isCurrentExcluded ? "Include" : "Exclude";
     const items: vscode.QuickPickItem[] = [
@@ -86,7 +90,7 @@ export const getExcludeFileDialog = () => {
         ) {
           toggleFile(filePath);
           vscode.window.showInformationMessage(
-            `${fileName} is now ${isExcluded(filePath) ? "excluded" : "included"}`,
+            `${fileName} is now ${selectIsExcluded(filePath) ? "excluded" : "included"}`,
           );
         } else {
           showExcludedFilesList();
@@ -95,7 +99,6 @@ export const getExcludeFileDialog = () => {
   };
 
   return {
-    isExcluded,
     showExcludeDialog,
   };
 };
