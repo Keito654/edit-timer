@@ -51,7 +51,7 @@ export function registerCommands(
     store.dispatch(
       switchIsTracking({
         now: Date.now(),
-        fsPath: vscode.window.activeTextEditor?.document.uri.fsPath,
+        activeFilePath: vscode.window.activeTextEditor?.document.uri.fsPath,
       }),
     );
     setTrackingContext();
@@ -74,7 +74,7 @@ export function registerCommands(
     store.dispatch(
       resumeTracking({
         now: Date.now(),
-        fsPath: vscode.window.activeTextEditor?.document.uri.fsPath,
+        activeFilePath: vscode.window.activeTextEditor?.document.uri.fsPath,
       }),
     );
     setTrackingContext();
@@ -93,16 +93,16 @@ export function registerCommands(
     store.dispatch(
       resetTimers({
         now: Date.now(),
-        fsPath: vscode.window.activeTextEditor?.document.uri.fsPath,
+        activeFilePath: vscode.window.activeTextEditor?.document.uri.fsPath,
       }),
     );
   });
 
-  const excludeFilesApi = getExcludeFileDialog();
+  const excludeFileDialog = getExcludeFileDialog();
   const toggleExclude = vscode.commands.registerCommand(
     "editTimer.toggleExclude",
     () => {
-      excludeFilesApi.showExcludeDialog();
+      excludeFileDialog.show();
       // 即時ステータスバー更新（現行ファイルのパスで描画）
       excludeFileStatusBar.render(
         vscode.window.activeTextEditor?.document.uri.fsPath,
@@ -137,7 +137,6 @@ export function registerCommands(
     "editTimer.refreshView",
     () => {
       deps.treeProvider.refresh();
-      // statusbars are updated by the global timer tick; keep this fast
     },
   );
 

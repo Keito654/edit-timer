@@ -83,14 +83,27 @@ const switchTimerReducer = (
 
 const switchExcludedReducer = (
   state: WritableDraft<TimerState>,
-  action: PayloadAction<FsPath>,
+  action: PayloadAction<{
+    fsPath: FsPath;
+    now?: number;
+    activeFilePath?: FsPath;
+  }>,
 ) => {
-  if (state.excludedFiles.includes(action.payload)) {
+  if (state.excludedFiles.includes(action.payload.fsPath)) {
     state.excludedFiles = state.excludedFiles.filter(
-      (file) => file !== action.payload,
+      (file) => file !== action.payload.fsPath,
     );
+    if (action.payload.activeFilePath && action.payload.now) {
+      switchTimerReducer(state, {
+        type: action.type,
+        payload: {
+          now: action.payload.now,
+          fsPath: action.payload.activeFilePath,
+        },
+      });
+    }
   } else {
-    state.excludedFiles.push(action.payload);
+    state.excludedFiles.push(action.payload.fsPath);
   }
 };
 
@@ -104,16 +117,18 @@ const pauseTrackingReducer = (
 
 const resumeTrackingReducer = (
   state: WritableDraft<TimerState>,
-  action: PayloadAction<{ now: number; fsPath?: FsPath }>,
+  action: PayloadAction<{ now: number; activeFilePath?: FsPath }>,
 ) => {
   state.isTracking = true;
-  stopTimerReducer(state, action);
-  switchTimerReducer(state, action);
+  switchTimerReducer(state, {
+    type: action.type,
+    payload: { now: action.payload.now, fsPath: action.payload.activeFilePath },
+  });
 };
 
 const switchIsTrackingReducer = (
   state: WritableDraft<TimerState>,
-  action: PayloadAction<{ now: number; fsPath?: FsPath }>,
+  action: PayloadAction<{ now: number; activeFilePath?: FsPath }>,
 ) => {
   if (state.isTracking) {
     pauseTrackingReducer(state, action);
@@ -131,10 +146,16 @@ export const timerSlice = createSlice({
     switchTimer: switchTimerReducer,
     resetTimers: (
       state,
-      action: PayloadAction<{ now: number; fsPath?: FsPath }>,
+      action: PayloadAction<{ now: number; activeFilePath?: FsPath }>,
     ) => {
       state.fileTimeTrackers = [];
-      switchTimerReducer(state, action);
+      switchTimerReducer(state, {
+        type: action.type,
+        payload: {
+          now: action.payload.now,
+          fsPath: action.payload.activeFilePath,
+        },
+      });
     },
     switchExcluded: switchExcludedReducer,
     pauseTracking: pauseTrackingReducer,

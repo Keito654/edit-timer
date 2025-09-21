@@ -11,14 +11,12 @@ import { selectIsTracking } from "./features/timer/selectors";
 
 export function activate(context: vscode.ExtensionContext) {
   // 初期アクティブエディタがあればタイマー開始
-  if (vscode.window.activeTextEditor?.document.uri.fsPath) {
-    store.dispatch(
-      startTimer({
-        now: Date.now(),
-        fsPath: vscode.window.activeTextEditor.document.uri.fsPath,
-      })
-    );
-  }
+  store.dispatch(
+    startTimer({
+      now: Date.now(),
+      fsPath: vscode.window.activeTextEditor?.document.uri.fsPath,
+    })
+  );
 
   const treeProvider = getTreeDataProvider();
   const timerStatusBar = getTimerStatusBar();
