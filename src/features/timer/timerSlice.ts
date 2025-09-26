@@ -1,6 +1,6 @@
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice, type WritableDraft } from "@reduxjs/toolkit";
-import type { FsPath } from "../../types";
+import type { FsPath, PersistentData } from "./types";
 import { calcElapse } from "./utils";
 
 export interface TimerState {
@@ -137,6 +137,29 @@ const switchIsTrackingReducer = (
   }
 };
 
+const loadDataReducer = (
+  state: WritableDraft<TimerState>,
+  action: PayloadAction<{
+    data: PersistentData;
+    now: number;
+    activeFilePath?: FsPath;
+  }>,
+) => {
+  state.isTracking = action.payload.data.isTracking;
+  state.excludedFiles = action.payload.data.excludedFiles;
+  state.currentTrackingFile = initialState.currentTrackingFile;
+  state.fileTimeTrackers = action.payload.data.fileData.map((p) => ({
+    fsPath: p.fsPath,
+    startAt: null,
+    accumulated: p.elapsedTime,
+  }));
+
+  switchTimerReducer(state, {
+    type: action.type,
+    payload: { now: action.payload.now, fsPath: action.payload.activeFilePath },
+  });
+};
+
 export const timerSlice = createSlice({
   name: "timer",
   initialState,
@@ -161,6 +184,7 @@ export const timerSlice = createSlice({
     pauseTracking: pauseTrackingReducer,
     resumeTracking: resumeTrackingReducer,
     switchIsTracking: switchIsTrackingReducer,
+    loadData: loadDataReducer,
   },
 });
 
@@ -173,6 +197,7 @@ export const {
   resumeTracking,
   switchTimer,
   resetTimers,
+  loadData,
 } = timerSlice.actions;
 
 export default timerSlice.reducer;

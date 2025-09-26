@@ -1,5 +1,5 @@
 import { getTimerState } from "../../store";
-import type { FsPath } from "../../types";
+import type { FsPath, PersistentData, PersistentFileData } from "./types";
 import { calcElapse } from "./utils";
 
 export const selectIsTracking = () => getTimerState().isTracking;
@@ -22,11 +22,9 @@ export const selectTrackerTime = (args: { now: number; fsPath: FsPath }) => {
     return null;
   }
 
-  if (timer.startAt) {
-    return calcElapse(args.now, timer.accumulated, timer.startAt);
-  } else {
-    return timer.accumulated;
-  }
+  return timer.startAt
+    ? calcElapse(args.now, timer.accumulated, timer.startAt)
+    : timer.accumulated;
 };
 
 export const selectTrackerTimeIfIncluded = (args: {
@@ -61,3 +59,27 @@ export const selectTrackedFileSize = () =>
 
 export const selectCurrentTrackingFile = () =>
   getTimerState().currentTrackingFile;
+
+export const selectPersistenceData = (args: {
+  now: number;
+}): PersistentData => {
+  const state = getTimerState();
+
+  const fileData: PersistentFileData[] = state.fileTimeTrackers
+    .map((timer) => {
+      return {
+        fsPath: timer.fsPath,
+        elapsedTime: timer.startAt
+          ? calcElapse(args.now, timer.accumulated, timer.startAt)
+          : timer.accumulated,
+      };
+    })
+    .filter((data) => data.elapsedTime > 0);
+
+  return {
+    excludedFiles: state.excludedFiles,
+    fileData,
+    isTracking: state.isTracking,
+    lastSavedAt: args.now,
+  };
+};
