@@ -1,6 +1,6 @@
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice, type WritableDraft } from "@reduxjs/toolkit";
-import type { FsPath } from "../../types";
+import type { FsPath, PersistentData } from "./types";
 import { calcElapse } from "./utils";
 
 export interface TimerState {
@@ -83,14 +83,27 @@ const switchTimerReducer = (
 
 const switchExcludedReducer = (
   state: WritableDraft<TimerState>,
-  action: PayloadAction<FsPath>,
+  action: PayloadAction<{
+    fsPath: FsPath;
+    now?: number;
+    activeFilePath?: FsPath;
+  }>,
 ) => {
-  if (state.excludedFiles.includes(action.payload)) {
+  if (state.excludedFiles.includes(action.payload.fsPath)) {
     state.excludedFiles = state.excludedFiles.filter(
-      (file) => file !== action.payload,
+      (file) => file !== action.payload.fsPath,
     );
+    if (action.payload.activeFilePath && action.payload.now) {
+      switchTimerReducer(state, {
+        type: action.type,
+        payload: {
+          now: action.payload.now,
+          fsPath: action.payload.activeFilePath,
+        },
+      });
+    }
   } else {
-    state.excludedFiles.push(action.payload);
+    state.excludedFiles.push(action.payload.fsPath);
   }
 };
 
@@ -104,22 +117,47 @@ const pauseTrackingReducer = (
 
 const resumeTrackingReducer = (
   state: WritableDraft<TimerState>,
-  action: PayloadAction<{ now: number; fsPath?: FsPath }>,
+  action: PayloadAction<{ now: number; activeFilePath?: FsPath }>,
 ) => {
   state.isTracking = true;
-  stopTimerReducer(state, action);
-  switchTimerReducer(state, action);
+  switchTimerReducer(state, {
+    type: action.type,
+    payload: { now: action.payload.now, fsPath: action.payload.activeFilePath },
+  });
 };
 
 const switchIsTrackingReducer = (
   state: WritableDraft<TimerState>,
-  action: PayloadAction<{ now: number; fsPath?: FsPath }>,
+  action: PayloadAction<{ now: number; activeFilePath?: FsPath }>,
 ) => {
   if (state.isTracking) {
     pauseTrackingReducer(state, action);
   } else {
     resumeTrackingReducer(state, action);
   }
+};
+
+const loadDataReducer = (
+  state: WritableDraft<TimerState>,
+  action: PayloadAction<{
+    data: PersistentData;
+    now: number;
+    activeFilePath?: FsPath;
+  }>,
+) => {
+  state.isTracking = action.payload.data.isTracking;
+  state.excludedFiles = action.payload.data.excludedFiles;
+  state.currentTrackingFile = initialState.currentTrackingFile;
+  state.fileTimeTrackers = action.payload.data.fileData.map((p) => ({
+    fsPath: p.fsPath,
+    startAt: null,
+    accumulated: p.elapsedTime,
+  }));
+
+  switchTimerReducer(state, {
+    type: action.type,
+    payload: { now: action.payload.now, fsPath: action.payload.activeFilePath },
+  });
 };
 
 export const timerSlice = createSlice({
@@ -131,15 +169,22 @@ export const timerSlice = createSlice({
     switchTimer: switchTimerReducer,
     resetTimers: (
       state,
-      action: PayloadAction<{ now: number; fsPath?: FsPath }>,
+      action: PayloadAction<{ now: number; activeFilePath?: FsPath }>,
     ) => {
       state.fileTimeTrackers = [];
-      switchTimerReducer(state, action);
+      switchTimerReducer(state, {
+        type: action.type,
+        payload: {
+          now: action.payload.now,
+          fsPath: action.payload.activeFilePath,
+        },
+      });
     },
     switchExcluded: switchExcludedReducer,
     pauseTracking: pauseTrackingReducer,
     resumeTracking: resumeTrackingReducer,
     switchIsTracking: switchIsTrackingReducer,
+    loadData: loadDataReducer,
   },
 });
 
@@ -152,6 +197,7 @@ export const {
   resumeTracking,
   switchTimer,
   resetTimers,
+  loadData,
 } = timerSlice.actions;
 
 export default timerSlice.reducer;

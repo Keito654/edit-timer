@@ -12,74 +12,87 @@ export const getFloatingTimerWebView = (context: vscode.ExtensionContext) => {
   let pendingTimeout: NodeJS.Timeout | undefined;
   let updateInterval: NodeJS.Timeout | undefined;
 
-  const createPanel = () => {
-    panel = vscode.window.createWebviewPanel(
-      "timeTrackerFloatingTimer",
-      "Floating Timer",
-      {
-        viewColumn: vscode.ViewColumn.Beside,
-        preserveFocus: true,
-      },
-      {
-        enableScripts: true,
-        retainContextWhenHidden: false,
-        localResourceRoots: [],
-      },
-    );
+  /**
+   * タイマーを1秒ごとに更新するsetIntervalを起動する
+   */
+  const startUpdateLoop = () => {
+    if (updateInterval) return;
+    updateInterval = setInterval(() => updateTimer(), 1000);
+  };
 
-    panel.webview.html = getWebviewContent();
-
-    panel.onDidDispose(
-      () => {
-        stopUpdateLoop();
-        clearTimeout(pendingTimeout);
-        pendingTimeout = undefined;
-        panel = undefined;
-      },
-      null,
-      context.subscriptions,
-    );
-
-    // メッセージ処理
-    panel.webview.onDidReceiveMessage(
-      (message: { command: string }) => {
-        if (message.command === "toggleTracking") {
-          // 既存のコマンドを呼び出してグローバルタイマーとの同期を保つ
-          vscode.commands.executeCommand("editTimer.toggle");
-          updateTimer();
-        }
-      },
-      null,
-      context.subscriptions,
-    );
-
-    // 可視状態の変更に応じて更新ループを制御
-    panel.onDidChangeViewState(
-      (e) => {
-        if (e.webviewPanel.visible) {
-          startUpdateLoop();
-        } else {
-          stopUpdateLoop();
-        }
-      },
-      undefined,
-      context.subscriptions,
-    );
-
-    // WebView が読み込まれるまで少し待ってから開始（スクリプト準備のため）
-    pendingTimeout = setTimeout(() => {
-      if (panel?.visible) {
-        startUpdateLoop();
-        updateTimer();
-      }
-    }, 1000);
+  /**
+   * タイマーを1秒ごとに更新するsetIntervalを停止する
+   */
+  const stopUpdateLoop = () => {
+    if (!updateInterval) return;
+    clearInterval(updateInterval);
+    updateInterval = undefined;
   };
 
   const show = () => {
     if (panel) {
       panel.reveal();
     } else {
-      createPanel();
+      panel = vscode.window.createWebviewPanel(
+        "timeTrackerFloatingTimer",
+        "Floating Timer",
+        {
+          viewColumn: vscode.ViewColumn.Beside,
+          preserveFocus: true,
+        },
+        {
+          enableScripts: true,
+          retainContextWhenHidden: false,
+          localResourceRoots: [],
+        },
+      );
+
+      panel.webview.html = getWebviewContent();
+
+      panel.onDidDispose(
+        () => {
+          stopUpdateLoop();
+          clearTimeout(pendingTimeout);
+          pendingTimeout = undefined;
+          panel = undefined;
+        },
+        null,
+        context.subscriptions,
+      );
+
+      // メッセージ処理
+      panel.webview.onDidReceiveMessage(
+        (message: { command: string }) => {
+          if (message.command === "toggleTracking") {
+            // 既存のコマンドを呼び出してグローバルタイマーとの同期を保つ
+            vscode.commands.executeCommand("editTimer.toggle");
+            updateTimer();
+          }
+        },
+        null,
+        context.subscriptions,
+      );
+
+      // 可視状態の変更に応じて更新ループを制御
+      panel.onDidChangeViewState(
+        (e) => {
+          if (e.webviewPanel.visible) {
+            startUpdateLoop();
+          } else {
+            stopUpdateLoop();
+          }
+        },
+        undefined,
+        context.subscriptions,
+      );
+
+      // WebView が読み込まれるまで少し待ってから開始（スクリプト準備のため）
+      pendingTimeout = setTimeout(() => {
+        if (panel?.visible) {
+          startUpdateLoop();
+          updateTimer();
+        }
+      }, 1000);
     }
   };
 
@@ -219,23 +232,6 @@ export const getFloatingTimerWebView = (context: vscode.ExtensionContext) => {
     </script>
 </body>
 </html>`;
-  };
-
-  /**
-   * タイマーを1秒ごとに更新するsetIntervalを起動する
-   */
-  const startUpdateLoop = () => {
-    if (updateInterval) return;
-    updateInterval = setInterval(() => updateTimer(), 1000);
-  };
-
-  /**
-   * タイマーを1秒ごとに更新するsetIntervalを停止する
-   */
-  const stopUpdateLoop = () => {
-    if (!updateInterval) return;
-    clearInterval(updateInterval);
-    updateInterval = undefined;
   };
 
   return {

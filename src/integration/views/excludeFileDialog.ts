@@ -5,7 +5,7 @@ import {
   selectExcludedFiles,
   selectIsExcluded,
 } from "../../features/timer/selectors";
-import { startTimer, switchExcluded } from "../../features/timer/timerSlice";
+import { switchExcluded } from "../../features/timer/timerSlice";
 
 export const getExcludeFileDialog = () => {
   const showExcludedFilesList = () => {
@@ -37,21 +37,18 @@ export const getExcludeFileDialog = () => {
   };
 
   const toggleFile = (filePath: string): boolean => {
-    store.dispatch(switchExcluded(filePath));
-
-    vscode.commands.executeCommand("editTimer.refreshView");
-
     store.dispatch(
-      startTimer({
+      switchExcluded({
+        fsPath: filePath,
         now: Date.now(),
-        fsPath: vscode.window.activeTextEditor?.document.uri.fsPath,
+        activeFilePath: vscode.window.activeTextEditor?.document.uri.fsPath,
       }),
     );
-
+    vscode.commands.executeCommand("editTimer.refreshView");
     return selectIsExcluded(filePath);
   };
 
-  const showExcludeDialog = () => {
+  const show = () => {
     const activeEditor = vscode.window.activeTextEditor;
     if (!activeEditor) {
       vscode.window.showInformationMessage("No active file to exclude");
@@ -99,6 +96,6 @@ export const getExcludeFileDialog = () => {
   };
 
   return {
-    showExcludeDialog,
+    show,
   };
 };

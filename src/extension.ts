@@ -8,17 +8,21 @@ import { registerCommands } from "./integration/registerCommands";
 import { registerEditorEvents } from "./integration/registerEditorEvents";
 import { startTimer } from "./features/timer/timerSlice";
 import { selectIsTracking } from "./features/timer/selectors";
+import { createPersistenceManager } from "./integration/persistence";
+
+let persistenceManger: ReturnType<typeof createPersistenceManager>;
 
 export function activate(context: vscode.ExtensionContext) {
+  persistenceManger = createPersistenceManager(context);
+  persistenceManger.initialize();
+
   // 初期アクティブエディタがあればタイマー開始
-  if (vscode.window.activeTextEditor?.document.uri.fsPath) {
-    store.dispatch(
-      startTimer({
-        now: Date.now(),
-        fsPath: vscode.window.activeTextEditor.document.uri.fsPath,
-      })
-    );
-  }
+  store.dispatch(
+    startTimer({
+      now: Date.now(),
+      fsPath: vscode.window.activeTextEditor?.document.uri.fsPath,
+    })
+  );
 
   const treeProvider = getTreeDataProvider();
   const timerStatusBar = getTimerStatusBar();
@@ -62,9 +66,11 @@ export function activate(context: vscode.ExtensionContext) {
     excludeFileStatusBar,
     tree,
     treeProvider,
-    globalTimer
+    globalTimer,
+    persistenceManger
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-export function deactivate() {}
+export function deactivate() {
+  persistenceManger.dispose();
+}
