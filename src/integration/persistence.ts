@@ -59,6 +59,7 @@ export const createPersistenceManager = (context: vscode.ExtensionContext) => {
     }
   };
 
+  // TODO: vscodeが強制終了した場合などにも状態が保存できるようにする
   /**
    * 永続化機能を終了する
    * - 現在の状態を保存
