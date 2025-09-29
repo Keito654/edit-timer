@@ -68,6 +68,7 @@ export function registerCommands(
     store.dispatch(pauseTracking({ now }));
     setTrackingContext();
     deps.timer.stop();
+    deps.statusBars.timerStatusBar.render();
   });
 
   const resume = vscode.commands.registerCommand("editTimer.resume", () => {
